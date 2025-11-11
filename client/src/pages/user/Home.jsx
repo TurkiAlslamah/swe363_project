@@ -1,4 +1,4 @@
-import bookImage from "../assets/images/book.svg";
+import bookImage from "../../assets/images/book.svg";
 import { motion } from "framer-motion";
 
 export default function Home() {
@@ -29,7 +29,9 @@ return (
           
           {/* Right Column - Text Content (Arabic RTL) */}
           <div className="col-lg-6 text-end mb-4 mb-lg-0">
-            <h1 className="display-2 fw-bold text-primary mb-3">
+            <h1 className="display-2 fw-bold mb-3" style={{
+              color: "#4B0082"
+            }}>
               اختبر قدراتك وابدأ
                رحلتك نحو التفوق
             </h1>

@@ -1,12 +1,12 @@
 import { Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 
 export default function Header() {
   const { isLoggedIn, logout } = useAuth();
 
   return (
     <nav
-    className="navbar navbar-expand-lg navbar-dark d-flex justify-content-between flex-row-reverse px-4 py-2 shadow-sm"
+    className="navbar navbar-expand-lg navbar-dark d-flex justify-content-between flex-row-reverse px-4 py-2 shadow-sm fixed-top"
     style={{
       backgroundColor: "#f8f9fa",      // light gray
       border: "1px solid #dee2e6",     // subtle border
@@ -30,7 +30,7 @@ export default function Header() {
               borderRadius: "8px",
               fontWeight: "500",
               padding: "6px 14px",
-              backgroundColor: "#8B5CF6",
+              backgroundColor: "#4B0082",
               border: "none",
             }}
             to="/register"
