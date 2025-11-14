@@ -8,23 +8,23 @@ import Home from "./pages/user/Home";
 import AdminDashboard from "./pages/admin/Dashboard";
 import TeacherCourses from "./pages/teacher/TeacherDashboard";
 
-import Header from "./components/user/Header";
-import Footer from "./components/user/Footer";
+import Header from "./components/common/Header";
+import Footer from "./components/common/Footer";
 
 export default function App() {
   return (
-     <AuthProvider>
+    <AuthProvider>
       <BrowserRouter>
         <Header />
 
         <main style={{ minHeight: "80vh" }}>
           <Routes>
-            {/* Public routes */}
+            {/* Public */}
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
 
-            {/* Protected routes */}
+            {/* Protected */}
             <Route
               path="/admin/dashboard"
               element={
@@ -33,8 +33,9 @@ export default function App() {
                 </ProtectedRoute>
               }
             />
+
             <Route
-              path="/teacher/courses"
+              path="/teacher/dashboard"
               element={
                 <ProtectedRoute allowedRoles={["teacher"]}>
                   <TeacherCourses />

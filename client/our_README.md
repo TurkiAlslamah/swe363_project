@@ -1,70 +1,89 @@
-# Getting Started with Create React App
+# SWE363 React Project
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This project is a modern **React-based web application** built for the SWE363 course.  
+It demonstrates a clean front-end architecture with routing, authentication context, and multi-role support (User, Admin, Teacher).
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+## 🚀 Features
 
-### `npm start`
+### 🌐 General
+- Built with **React + Vite (or CRA)**.
+- Organized folder structure for scalability.
+- Supports **RTL Arabic layout**.
+- Responsive and mobile-friendly using **Bootstrap 5**.
+- Modern design with **Framer Motion animations**.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### 👤 Authentication
+- Simulated login and register (via `AuthContext`).
+- Role-based routing for:
+  - 👥 User (`/home`)
+  - 👨‍🏫 Teacher (`/teacher/courses`)
+  - 👨‍💼 Admin (`/admin/dashboard`)
+- Context handles login/logout and user roles.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### 💡 UI Pages
+| Page | Route | Description |
+|------|--------|-------------|
+| 🏠 Home | `/` or `/home` | Landing page with animated SVG and Arabic hero section |
+| 🔐 Login | `/login` | Arabic login form with modern gradient background |
+| 🧾 Register | `/register` | Arabic registration form (glass-style card) |
+| 🧑‍💼 Admin | `/admin/dashboard` | Placeholder for admin dashboard |
+| 🧑‍🏫 Teacher | `/teacher/courses` | Placeholder for teacher course page |
 
-### `npm test`
+---
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## 🧱 Folder Structure
 
-### `npm run build`
+client/
+└── src/
+├── assets/
+│ └── images/
+│ └── book.svg
+├── components/
+│ └── common/
+│ ├── Header.jsx
+│ └── Footer.jsx
+├── context/
+│ └── AuthContext.jsx
+├── pages/
+│ ├── Home.jsx
+│ ├── auth/
+│ │ ├── Login.jsx
+│ │ └── Register.jsx
+│ ├── admin/
+│ │ └── Dashboard.jsx
+│ └── teacher/
+│ └── Courses.jsx
+├── routes/
+│ └── ProtectedRoute.jsx
+├── App.js
+└── index.js
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+---
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## 🧠 Technologies Used
 
-### `npm run eject`
+| Stack | Purpose |
+|-------|----------|
+| **React 18+** | Front-end library |
+| **React Router DOM** | Client-side routing |
+| **Bootstrap 5** | Styling framework |
+| **Framer Motion** | Animation effects |
+| **Context API** | Global user state (auth) |
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+---
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## ⚙️ Installation & Setup
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+```bash
+# Clone the repository
+git clone https://github.com/your-username/swe363_project.git
+cd swe363_project/client
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+# Install dependencies
+npm install
 
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+# Run the development server
+npm start

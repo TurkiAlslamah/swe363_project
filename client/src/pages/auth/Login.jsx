@@ -10,10 +10,15 @@ export default function Login() {
     e.preventDefault();
     const email = e.target.email.value;
     const password = e.target.password.value;
+    const role = e.target.role.value; // Get selected role
 
-    // simulate login
-    login(email, "user");
-    navigate("/home");
+    // Simulate login (store email + role)
+    login(email, role);
+
+    // Redirect based on role
+    if (role === "admin") navigate("/admin/dashboard");
+    else if (role === "teacher") navigate("/teacher/courses");
+    else navigate("/home");
   };
 
   return (
@@ -48,7 +53,7 @@ export default function Login() {
             />
           </div>
 
-          <div className="mb-4">
+          <div className="mb-3">
             <label className="form-label">كلمة المرور</label>
             <input
               type="password"
@@ -57,6 +62,16 @@ export default function Login() {
               placeholder="••••••••"
               required
             />
+          </div>
+
+          {/* Role selection */}
+          <div className="mb-4">
+            <label className="form-label">نوع المستخدم</label>
+            <select name="role" className="form-select text-end" required>
+              <option value="user">مستخدم</option>
+              <option value="teacher">معلم</option>
+              <option value="admin">مدير</option>
+            </select>
           </div>
 
           <button
@@ -70,17 +85,6 @@ export default function Login() {
             تسجيل الدخول
           </button>
         </form>
-
-        <p className="text-center mt-4 text-muted">
-          ليس لديك حساب؟{" "}
-          <button
-            onClick={() => navigate("/register")}
-            className="btn btn-link p-0 fw-bold"
-            style={{ color: "#4B0082" }}
-          >
-            أنشئ حسابًا جديدًا
-          </button>
-        </p>
       </div>
     </div>
   );
