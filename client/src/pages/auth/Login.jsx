@@ -17,7 +17,7 @@ export default function Login() {
 
     // Redirect based on role
     if (role === "admin") navigate("/admin/dashboard");
-    else if (role === "teacher") navigate("/teacher/courses");
+    else if (role === "teacher") navigate("/teacher/dashboard");
     else navigate("/home");
   };
 

@@ -5,8 +5,9 @@ import ProtectedRoute from "./routes/ProtectedRoute";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import Home from "./pages/user/Home";
-import AdminDashboard from "./pages/admin/Dashboard";
-import TeacherCourses from "./pages/teacher/TeacherDashboard";
+import TeacherDashboard from "./pages/teacher/TeacherDashboard";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+
 
 import Header from "./components/common/Header";
 import Footer from "./components/common/Footer";
@@ -38,7 +39,7 @@ export default function App() {
               path="/teacher/dashboard"
               element={
                 <ProtectedRoute allowedRoles={["teacher"]}>
-                  <TeacherCourses />
+                  <TeacherDashboard />
                 </ProtectedRoute>
               }
             />
