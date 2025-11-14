@@ -18,7 +18,7 @@ It demonstrates a clean front-end architecture with routing, authentication cont
 - Simulated login and register (via `AuthContext`).
 - Role-based routing for:
   - 👥 User (`/home`)
-  - 👨‍🏫 Teacher (`/teacher/courses`)
+  - 👨‍🏫 Teacher (`/teacher/dashboard`)
   - 👨‍💼 Admin (`/admin/dashboard`)
 - Context handles login/logout and user roles.
 
