@@ -58,7 +58,20 @@ export default function Header() {
                 : "مستخدم"}
             </span>
 
-            {/* Home button */}
+            {/* Role-based navigation links */}
+            {user.role === "admin" && (
+              <Link className="btn btn-outline-primary me-2" to="/admin/dashboard">
+                لوحة التحكم
+              </Link>
+            )}
+
+            {user.role === "teacher" && (
+              <Link className="btn btn-outline-primary me-2" to="/teacher/dashboard">
+                لوحة التحكم
+              </Link>
+            )}
+
+            {/* Home button - shown for all logged in users */}
             <Link className="btn btn-outline-dark" to="/home">
               الصفحة الرئيسة
             </Link>

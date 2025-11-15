@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import TeacherNav from '../components/TeacherNav';
-import QuestionTable from '../components/QuestionTable';
-import { getQuestions, deleteQuestion } from '../data/mockQuestions';
+import QuestionTable from './components/QuestionTable';
+import { getQuestions, deleteQuestion } from './data/mockQuestions';
 
 export default function MyQuestions() {
   const navigate = useNavigate();
@@ -33,7 +32,6 @@ export default function MyQuestions() {
       background: "linear-gradient(180deg, #f4e6ff 0%, #ffffff 100%)",
       direction: "rtl"
     }}>
-      <TeacherNav />
       
       <div className="container py-4">
         <div className="d-flex justify-content-between align-items-center mb-4">

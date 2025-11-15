@@ -1,8 +1,7 @@
 import React from 'react';
-import TeacherNav from '../components/TeacherNav';
-import DashboardCard from '../components/DashboardCard';
-import { getQuestions } from '../data/mockQuestions';
-import { getStudents } from '../data/mockStudents';
+import DashboardCard from './components/DashboardCard';
+import { getQuestions } from './data/mockQuestions';
+import { getStudents } from './data/mockStudents';
 
 export default function Dashboard() {
   const questions = getQuestions();
@@ -14,8 +13,6 @@ export default function Dashboard() {
       background: "linear-gradient(180deg, #f4e6ff 0%, #ffffff 100%)",
       direction: "rtl"
     }}>
-      <TeacherNav />
-      
       <div className="container py-4">
         <h2 className="mb-4 fw-bold" style={{ color: "#6B46C1" }}>
           لوحة تحكم المعلم
