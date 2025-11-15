@@ -6,6 +6,9 @@ import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import Home from "./pages/Home";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import UserDashboard from "./pages/user/UserDashboard";
+import Training from "./pages/user/Training";
+import TrainingQuestions from "./pages/user/TrainingQuestions";
 
 // Teacher pages
 import TeacherDashboard from "./pages/teacher/Dashboard";
@@ -38,6 +41,26 @@ function AppContent() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+
+          {/* User Dashboard */}
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={["user"]}>
+                <UserDashboard />
+              </ProtectedRoute>
+            }
+          />
+            <Route
+            path="/training"
+            element={
+              <ProtectedRoute allowedRoles={["user"]}>
+                <Training />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/training/:trainingId" element={<ProtectedRoute allowedRoles={["user"]}><TrainingQuestions /></ProtectedRoute>} />
+
 
           {/* Teacher Routes */}
           <Route path="/teacher/login" element={<TeacherLogin />} />
@@ -82,7 +105,7 @@ function AppContent() {
             }
           />
 
-          {/* Protected */}
+          {/* Admin Dashboard */}
           <Route
             path="/admin/dashboard"
             element={

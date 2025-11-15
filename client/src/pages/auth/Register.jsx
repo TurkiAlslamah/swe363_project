@@ -20,7 +20,7 @@ export default function Register() {
 
     // Simulate register -> login -> navigate
     login(email, "user");
-    navigate("/home");
+    navigate("/dashboard");
   };
 
   return (
