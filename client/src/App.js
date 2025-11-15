@@ -7,6 +7,8 @@ import Register from "./pages/auth/Register";
 import Home from "./pages/Home";
 import TeacherDashboard from "./pages/teacher/TeacherDashboard";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import UserManagement from "./pages/admin/UserManagement";
+import ReviewQuestions from "./pages/admin/ReviewQuestions";
 
 
 import Header from "./components/common/Header";
@@ -34,6 +36,25 @@ export default function App() {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/admin/users"
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <UserManagement />
+                </ProtectedRoute>
+              }
+            />
+           <Route
+              path="/admin/review"
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <ReviewQuestions />
+                </ProtectedRoute>
+              }
+            />
+
+
+
 
             <Route
               path="/teacher/dashboard"
