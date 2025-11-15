@@ -1,4 +1,4 @@
-import bookImage from "../../assets/images/book.svg";
+import bookImage from "../assets/images/book.svg";
 import { motion } from "framer-motion";
 
 export default function Home() {
