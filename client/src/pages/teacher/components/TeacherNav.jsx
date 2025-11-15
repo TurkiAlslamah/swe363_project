@@ -10,8 +10,8 @@ export default function TeacherNav() {
 
   return (
     <nav 
-      className="navbar navbar-expand-lg navbar-light bg-white shadow-sm mb-4"
-      style={{ direction: "rtl" }}
+      className="navbar navbar-expand-lg navbar-light bg-white shadow-sm"
+      style={{ direction: "rtl", marginTop: "56px" }}
     >
       <div className="container-fluid">
         <Link className="navbar-brand fw-bold" to="/teacher/dashboard" style={{ color: "#6B46C1" }}>

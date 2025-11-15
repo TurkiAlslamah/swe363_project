@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import TeacherNav from '../components/TeacherNav';
-import SearchBar from '../components/SearchBar';
-import Modal from '../components/Modal';
-import FeedbackForm from '../components/FeedbackForm';
-import { getStudents, searchStudents } from '../data/mockStudents';
-import { addFeedback } from '../data/mockFeedback';
+import SearchBar from './components/SearchBar';
+import Modal from './components/Modal';
+import FeedbackForm from './components/FeedbackForm';
+import { getStudents, searchStudents } from './data/mockStudents';
+import { addFeedback } from './data/mockFeedback';
 
 export default function Feedback() {
   const [students, setStudents] = useState(getStudents());
@@ -55,7 +54,6 @@ export default function Feedback() {
       background: "linear-gradient(180deg, #f4e6ff 0%, #ffffff 100%)",
       direction: "rtl"
     }}>
-      <TeacherNav />
       
       <div className="container py-4">
         <h2 className="mb-4 fw-bold" style={{ color: "#6B46C1" }}>

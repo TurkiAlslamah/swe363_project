@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import TeacherNav from '../components/TeacherNav';
-import QuestionForm from '../components/QuestionForm';
-import { getQuestionById, updateQuestion } from '../data/mockQuestions';
+import QuestionForm from './components/QuestionForm';
+import { getQuestionById, updateQuestion } from './data/mockQuestions';
 
 export default function EditQuestion() {
   const { id } = useParams();
@@ -51,7 +50,6 @@ export default function EditQuestion() {
         background: "linear-gradient(180deg, #f4e6ff 0%, #ffffff 100%)",
         direction: "rtl"
       }}>
-        <TeacherNav />
         <div className="container py-4">
           <div className="text-center">جاري التحميل...</div>
         </div>
@@ -65,7 +63,6 @@ export default function EditQuestion() {
       background: "linear-gradient(180deg, #f4e6ff 0%, #ffffff 100%)",
       direction: "rtl"
     }}>
-      <TeacherNav />
       
       <div className="container py-4">
         <h2 className="mb-4 fw-bold" style={{ color: "#6B46C1" }}>

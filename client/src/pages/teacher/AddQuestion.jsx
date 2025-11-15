@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import TeacherNav from '../components/TeacherNav';
-import QuestionForm from '../components/QuestionForm';
-import { addQuestion, getNextAvailableQuestionNumber } from '../data/mockQuestions';
+import QuestionForm from './components/QuestionForm';
+import { addQuestion, getNextAvailableQuestionNumber } from './data/mockQuestions';
 
 export default function AddQuestion() {
   const navigate = useNavigate();
@@ -40,7 +39,6 @@ export default function AddQuestion() {
       background: "linear-gradient(180deg, #f4e6ff 0%, #ffffff 100%)",
       direction: "rtl"
     }}>
-      <TeacherNav />
       
       <div className="container py-4">
         <h2 className="mb-4 fw-bold" style={{ color: "#6B46C1" }}>

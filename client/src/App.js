@@ -4,20 +4,23 @@ import ProtectedRoute from "./routes/ProtectedRoute";
 
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
-import Home from "./pages/Home"; 
-import TeacherDashboard from "./pages/teacher/TeacherDashboard";
+import Home from "./pages/Home";
 import AdminDashboard from "./pages/admin/AdminDashboard";
-import UserDashboard from "./pages/user/UserDashboard"; 
+import UserDashboard from "./pages/user/UserDashboard";
 import Training from "./pages/user/Training";
 import TrainingQuestions from "./pages/user/TrainingQuestions";
-// Teacher pages
-import TeacherLogin from "./pages/teacher/pages/Login";
-import MyQuestions from "./pages/teacher/pages/MyQuestions";
-import AddQuestion from "./pages/teacher/pages/AddQuestion";
-import EditQuestion from "./pages/teacher/pages/EditQuestion";
-import Feedback from "./pages/teacher/pages/Feedback";
 
+// Teacher pages
+import TeacherDashboard from "./pages/teacher/Dashboard";
+import TeacherLogin from "./pages/teacher/Login";
+import MyQuestions from "./pages/teacher/MyQuestions";
+import AddQuestion from "./pages/teacher/AddQuestion";
+import EditQuestion from "./pages/teacher/EditQuestion";
+import Feedback from "./pages/teacher/Feedback";
+
+// Navigation components
 import Header from "./components/common/Header";
+import TeacherNav from "./pages/teacher/components/TeacherNav";
 import Footer from "./components/common/Footer";
 
 function AppContent() {
@@ -26,8 +29,13 @@ function AppContent() {
 
   return (
     <>
-      {!isTeacherRoute && <Header />}
-      <main style={{ minHeight: "80vh" }}>
+      {/* Global Header - always shown */}
+      <Header />
+      
+      {/* Teacher-specific navigation - shown below Header on teacher routes */}
+      {isTeacherRoute && <TeacherNav />}
+      
+      <main style={{ minHeight: "80vh", paddingTop: isTeacherRoute ? "120px" : "80px" }}>
         <Routes>
           {/* Public */}
           <Route path="/" element={<Home />} />
@@ -108,7 +116,7 @@ function AppContent() {
           />
         </Routes>
       </main>
-      {!isTeacherRoute && <Footer />}
+      <Footer />
     </>
   );
 }
