@@ -8,7 +8,8 @@ import Home from "./pages/Home";
 import TeacherDashboard from "./pages/teacher/TeacherDashboard";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import UserDashboard from "./pages/user/UserDashboard"; 
-
+import Training from "./pages/user/Training";
+import TrainingQuestions from "./pages/user/TrainingQuestions";
 // Teacher pages
 import TeacherLogin from "./pages/teacher/pages/Login";
 import MyQuestions from "./pages/teacher/pages/MyQuestions";
@@ -42,6 +43,16 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
+            <Route
+            path="/training"
+            element={
+              <ProtectedRoute allowedRoles={["user"]}>
+                <Training />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/training/:trainingId" element={<ProtectedRoute allowedRoles={["user"]}><TrainingQuestions /></ProtectedRoute>} />
+
 
           {/* Teacher Routes */}
           <Route path="/teacher/login" element={<TeacherLogin />} />
