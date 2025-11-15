@@ -1,24 +1,30 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
-export default function Login() {
+export default function TeacherLogin() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [error, setError] = useState('');
 
   const handleLogin = (e) => {
     e.preventDefault();
     const email = e.target.email.value;
     const password = e.target.password.value;
-    const role = e.target.role.value; // Get selected role
 
-    // Simulate login (store email + role)
-    login(email, role);
+    // Client-side validation
+    if (!email || !password) {
+      setError('يرجى إدخال البريد الإلكتروني وكلمة المرور');
+      return;
+    }
 
-    // Redirect based on role
-    if (role === "admin") navigate("/admin/dashboard");
-    else if (role === "teacher") navigate("/teacher/dashboard");
-    else navigate("/dashboard");
+    // Simulate login (in real app, this would be an API call)
+    try {
+      login(email, 'teacher');
+      navigate('/teacher/dashboard');
+    } catch (err) {
+      setError('البريد الإلكتروني أو كلمة المرور غير صحيحة');
+    }
   };
 
   return (
@@ -34,12 +40,18 @@ export default function Login() {
         style={{
           width: "100%",
           maxWidth: "400px",
-          background: "rgba(255, 255, 255, 0.7)",
+          background: "rgba(255, 255, 255, 0.9)",
           backdropFilter: "blur(10px)",
         }}
       >
-        <h2 className="text-center fw-bold text-primary mb-2">تسجيل الدخول</h2>
+        <h2 className="text-center fw-bold text-primary mb-2">تسجيل الدخول - المعلم</h2>
         <p className="text-center text-muted mb-4">مرحباً بعودتك 👋</p>
+
+        {error && (
+          <div className="alert alert-danger" role="alert">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleLogin}>
           <div className="mb-3">
@@ -59,29 +71,12 @@ export default function Login() {
               type="password"
               name="password"
               className="form-control text-end"
-              placeholder="••••••••"
+              placeholder="أدخل كلمة المرور"
               required
             />
           </div>
 
-          {/* Role selection */}
-          <div className="mb-4">
-            <label className="form-label">نوع المستخدم</label>
-            <select name="role" className="form-select text-end" required>
-              <option value="user">مستخدم</option>
-              <option value="teacher">معلم</option>
-              <option value="admin">مدير</option>
-            </select>
-          </div>
-
-          <button
-            type="submit"
-            className="btn w-100 text-white fw-bold"
-            style={{
-              backgroundColor: "#4B0082",
-              border: "none",
-            }}
-          >
+          <button type="submit" className="btn btn-primary w-100 mb-3">
             تسجيل الدخول
           </button>
         </form>
@@ -89,3 +84,4 @@ export default function Login() {
     </div>
   );
 }
+

@@ -1,6 +1,10 @@
 // src/components/common/Header.jsx
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { FaHome } from "react-icons/fa";
+import { MdMenuBook } from "react-icons/md";
+import { MdQuiz } from "react-icons/md";
+import { BsGraphUp } from "react-icons/bs";
 
 export default function Header() {
   const { user, logout } = useAuth();
@@ -96,20 +100,22 @@ export default function Header() {
 
   // ======== الهيدر العادي (لغير الأدمن) ========
   return (
-    <nav
-      className="navbar navbar-expand-lg d-flex justify-content-between flex-row-reverse px-4 py-2 shadow-sm fixed-top"
-      style={{
-        backgroundColor: "#ffffff",
-        borderBottom: "1px solid #dee2e6",
-      }}
-    >
-      {/* Brand / Logo */}
-      <Link className="navbar-brand fw-bold text-dark" to="/">
-        SWE363
-      </Link>
+  <nav
+    className="navbar navbar-expand-lg d-flex justify-content-between align-items-center px-4 py-2 shadow-sm fixed-top"
+    dir="rtl"
+    style={{
+      backgroundColor: "#fffefeff",
+      borderBottom: "1px solid #dee2e6",
+    }}
+  >
+    {/* Brand / Logo - FAR RIGHT */}
+    <Link className="navbar-brand fw-bold text-dark" to="/">
+      SWE363
+    </Link>
 
       {/* RIGHT SIDE CONTENT */}
       <div className="d-flex align-items-center gap-2">
+
         {/* ====================== NOT LOGGED IN ======================= */}
         {!isLoggedIn && (
           <>
@@ -132,26 +138,33 @@ export default function Header() {
           </>
         )}
 
-        {/* ======================== LOGGED IN (User / Teacher) ======================== */}
-        {isLoggedIn && !isAdmin && (
+        {/* ======================== LOGGED IN ======================== */}
+        {isLoggedIn && (
           <>
+            {/* User Role Indicator */}
             <span
               className="badge text-light me-2"
               style={{ backgroundColor: "#4B0082" }}
             >
-              {user.role === "teacher" ? "معلم" : "مستخدم"}
+              {user.role === "admin"
+                ? "مدير"
+                : user.role === "teacher"
+                ? "معلم"
+                : "مستخدم"}
             </span>
 
-            {/* ملاحظة: غيّرت المسار لـ "/" عشان ما يوديك على صفحة /home الفاضية */}
-            <Link className="btn btn-outline-dark" to="/">
+            {/* Home button */}
+            <Link className="btn btn-outline-dark" to="/home">
               الصفحة الرئيسة
             </Link>
 
+            {/* Logout button */}
             <button className="btn btn-danger" onClick={logout}>
               تسجيل خروج
             </button>
           </>
         )}
+
       </div>
     </nav>
   );
