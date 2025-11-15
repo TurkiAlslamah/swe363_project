@@ -4,10 +4,10 @@ import ProtectedRoute from "./routes/ProtectedRoute";
 
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
-import Home from "./pages/Home";
+import Home from "./pages/Home"; 
 import TeacherDashboard from "./pages/teacher/TeacherDashboard";
 import AdminDashboard from "./pages/admin/AdminDashboard";
-
+import UserDashboard from "./pages/user/UserDashboard"; 
 
 import Header from "./components/common/Header";
 import Footer from "./components/common/Footer";
@@ -25,7 +25,17 @@ export default function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
 
-            {/* Protected */}
+            {/* User Dashboard */}
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute allowedRoles={["user"]}>
+                  <UserDashboard />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Admin Dashboard */}
             <Route
               path="/admin/dashboard"
               element={
@@ -35,6 +45,7 @@ export default function App() {
               }
             />
 
+            {/* Teacher Dashboard */}
             <Route
               path="/teacher/dashboard"
               element={
