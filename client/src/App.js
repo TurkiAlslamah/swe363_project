@@ -4,12 +4,12 @@ import ProtectedRoute from "./routes/ProtectedRoute";
 
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
-import Home from "./pages/user/Home";
-import AdminDashboard from "./pages/admin/AdminDashboard";
+import Home from "./pages/Home"; 
 import TeacherDashboard from "./pages/teacher/TeacherDashboard";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import UserDashboard from "./pages/user/UserDashboard"; 
 
 // Teacher pages
-import TeacherDashboard from "./pages/teacher/pages/Dashboard";
 import TeacherLogin from "./pages/teacher/pages/Login";
 import MyQuestions from "./pages/teacher/pages/MyQuestions";
 import AddQuestion from "./pages/teacher/pages/AddQuestion";
@@ -32,6 +32,16 @@ function AppContent() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+
+          {/* User Dashboard */}
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={["user"]}>
+                <UserDashboard />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Teacher Routes */}
           <Route path="/teacher/login" element={<TeacherLogin />} />
@@ -76,7 +86,7 @@ function AppContent() {
             }
           />
 
-          {/* Protected */}
+          {/* Admin Dashboard */}
           <Route
             path="/admin/dashboard"
             element={
