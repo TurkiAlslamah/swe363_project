@@ -14,11 +14,11 @@ export default function Training() {
   ];
 
   const quantSections = [
-    { id: 1, title: "جبر", progress: 450, total: 12, percentage: 1, colorClass: "indigo", icon: "book" },
-    { id: 2, title: "هندسة", progress: 320, total: 8, percentage: 1, colorClass: "indigo", icon: "language" },
-    { id: 3, title: "الاحصاء", progress: 280, total: 6, percentage: 1, colorClass: "indigo", icon: "file" },
-    { id: 4, title: "حساب", progress: 520, total: 10, percentage: 4, colorClass: "indigo", icon: "target" },
-    { id: 5, title: "مقارنات كمية", progress: 610, total: 15, percentage: 1, colorClass: "indigo", icon: "star" },
+    { id: 6, title: "جبر", progress: 450, total: 12, percentage: 1, colorClass: "indigo", icon: "book" },
+    { id: 7, title: "هندسة", progress: 320, total: 8, percentage: 1, colorClass: "indigo", icon: "language" },
+    { id: 8, title: "الاحصاء", progress: 280, total: 6, percentage: 1, colorClass: "indigo", icon: "file" },
+    { id: 9, title: "حساب", progress: 520, total: 10, percentage: 4, colorClass: "indigo", icon: "target" },
+    { id: 10, title: "مقارنات كمية", progress: 610, total: 15, percentage: 1, colorClass: "indigo", icon: "star" },
   ];
 
   const colors = {
