@@ -9,7 +9,10 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import UserDashboard from "./pages/user/UserDashboard";
 import Training from "./pages/user/Training";
 import TrainingQuestions from "./pages/user/TrainingQuestions";
+// Admin pages
 
+import UserManagement from "./pages/admin/UserManagement";
+import ReviewQuestions from "./pages/admin/ReviewQuestions";
 // Teacher pages
 import TeacherDashboard from "./pages/teacher/Dashboard";
 import TeacherLogin from "./pages/teacher/Login";
@@ -105,12 +108,30 @@ function AppContent() {
             }
           />
 
-          {/* Admin Dashboard */}
+             {/* ========= Admin Routes ========= */}
           <Route
             path="/admin/dashboard"
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/users"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <UserManagement />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/review"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <ReviewQuestions />
               </ProtectedRoute>
             }
           />
