@@ -9,6 +9,8 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import UserDashboard from "./pages/user/UserDashboard";
 import Training from "./pages/user/Training";
 import TrainingQuestions from "./pages/user/TrainingQuestions";
+import Exams from "./pages/user/Exams";
+import CustomTest from "./pages/user/CustomTest";
 // Admin pages
 
 import UserManagement from "./pages/admin/UserManagement";
@@ -63,6 +65,23 @@ function AppContent() {
             }
           />
           <Route path="/training/:trainingId" element={<ProtectedRoute allowedRoles={["user"]}><TrainingQuestions /></ProtectedRoute>} />
+          <Route
+            path="/exams"
+            element={
+              <ProtectedRoute allowedRoles={["user"]}>
+                <Exams />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/exams/custom"
+            element={ 
+              <ProtectedRoute allowedRoles={["user"]}>
+                <CustomTest />
+              </ProtectedRoute>
+            }
+          />
+
 
 
           {/* Teacher Routes */}
