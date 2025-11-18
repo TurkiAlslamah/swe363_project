@@ -15,6 +15,7 @@ import CustomTest from "./pages/user/CustomTest";
 
 import UserManagement from "./pages/admin/UserManagement";
 import ReviewQuestions from "./pages/admin/ReviewQuestions";
+import EditQuestionAdmin from "./pages/admin/EditQuestionAdmin"; 
 // Teacher pages
 import TeacherDashboard from "./pages/teacher/Dashboard";
 import TeacherLogin from "./pages/teacher/Login";
@@ -151,6 +152,14 @@ function AppContent() {
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <ReviewQuestions />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/review/:id/edit"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <EditQuestionAdmin />
               </ProtectedRoute>
             }
           />
