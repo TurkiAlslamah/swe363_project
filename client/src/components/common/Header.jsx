@@ -4,7 +4,7 @@ import { FaHome } from "react-icons/fa";
 import { MdMenuBook } from "react-icons/md";
 import { MdQuiz } from "react-icons/md";
 import { BsGraphUp } from "react-icons/bs";
-
+import { FaUsers } from "react-icons/fa";
 export default function Header() {
   const { user, logout } = useAuth();
   const isLoggedIn = !!user;
@@ -30,70 +30,101 @@ export default function Header() {
         </div>
 
         {/* وسط: روابط الأدمن */}
-        <div className="mx-auto d-flex align-items-center gap-3">
-          <Link
-            to="/admin/dashboard"
-            className="d-flex align-items-center px-3 py-2 rounded-pill text-decoration-none"
-            style={{
-              backgroundColor: isActiveAdmin("/admin/dashboard")
-                ? "#4B0082"
-                : "transparent",
-              color: isActiveAdmin("/admin/dashboard") ? "#ffffff" : "#4B0082",
-              fontWeight: 600,
-            }}
-          >
-            <span className="ms-1">🏠</span>
-            <span>الصفحة الرئيسة</span>
-          </Link>
+       {/* وسط: روابط الأدمن */}
+<div className="mx-auto d-flex align-items-center gap-3">
+  
+  {/* الصفحة الرئيسية */}
+  <Link
+    to="/admin/dashboard"
+    className="d-flex align-items-center px-3 py-2 rounded-pill text-decoration-none"
+    style={{
+      backgroundColor: isActiveAdmin("/admin/dashboard") ? "#4B0082" : "transparent",
+      color: isActiveAdmin("/admin/dashboard") ? "#ffffff" : "#4B0082",
+      fontWeight: 600,
+    }}
+  >
+    <FaHome size={18} className="ms-1" />
+    الصفحة الرئيسة
+  </Link>
 
-          <Link
-            to="/admin/users"
-            className="d-flex align-items-center px-3 py-2 rounded-pill text-decoration-none"
-            style={{
-              backgroundColor: isActiveAdmin("/admin/users")
-                ? "#4B0082"
-                : "transparent",
-              color: isActiveAdmin("/admin/users") ? "#ffffff" : "#6b7280",
-              fontWeight: 500,
-            }}
-          >
-            <span className="ms-1">📘</span>
-            <span>إدارة المستخدمين</span>
-          </Link>
+  {/* إدارة المستخدمين */}
+  <Link
+    to="/admin/users"
+    className="d-flex align-items-center px-3 py-2 rounded-pill text-decoration-none"
+    style={{
+      backgroundColor: isActiveAdmin("/admin/users") ? "#4B0082" : "transparent",
+      color: isActiveAdmin("/admin/users") ? "#ffffff" : "#6b7280",
+      fontWeight: 500,
+    }}
+  >
+    <FaUsers size={18} className="ms-1" />
+    إدارة المستخدمين
+  </Link>
 
-          <Link
-            to="/admin/review"
-            className="d-flex align-items-center px-3 py-2 rounded-pill text-decoration-none"
-            style={{
-              backgroundColor: isActiveAdmin("/admin/review")
-                ? "#4B0082"
-                : "transparent",
-              color: isActiveAdmin("/admin/review") ? "#ffffff" : "#6b7280",
-              fontWeight: 500,
-            }}
-          >
-            <span className="ms-1">📊</span>
-            <span>مراجعة الأسئلة</span>
-          </Link>
-        </div>
+  {/* مراجعة الأسئلة */}
+  <Link
+    to="/admin/review"
+    className="d-flex align-items-center px-3 py-2 rounded-pill text-decoration-none"
+    style={{
+      backgroundColor: isActiveAdmin("/admin/review") ? "#4B0082" : "transparent",
+      color: isActiveAdmin("/admin/review") ? "#ffffff" : "#6b7280",
+      fontWeight: 500,
+    }}
+  >
+    <MdQuiz size={20} className="ms-1" />
+    مراجعة الأسئلة
+  </Link>
+</div>
 
-        {/* يسار: شارة الدور + تسجيل خروج */}
+
         <div className="d-flex align-items-center gap-2">
-          <span
-            className="badge text-light"
-            style={{ backgroundColor: "#4B0082" }}
-          >
-            مدير
-          </span>
-
-          <button className="btn btn-danger btn-sm" onClick={logout}>
-            تسجيل خروج
-          </button>
+          <div className="dropdown">
+            <img
+              src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
+              width="32"
+              height="32"
+              className="rounded-circle dropdown-toggle"
+              role="button"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+              alt="avatar"
+              style={{ cursor: "pointer" }}
+            />
+            <ul className="dropdown-menu dropdown-menu-start">
+              <li className="px-3 py-2 border-bottom">
+                <div className="fw-bold">
+                  {user.name || "مدير النظام"}
+                </div>
+                <small className="text-muted">{user.email}</small>
+              </li>
+              <li>
+                <button className="dropdown-item" type="button">
+                  الملف الشخصي
+                </button>
+              </li>
+              <li>
+                <button className="dropdown-item" type="button">
+                  الإعدادات
+                </button>
+              </li>
+              <li>
+                <hr className="dropdown-divider" />
+              </li>
+              <li>
+                <button
+                  className="dropdown-item text-danger"
+                  type="button"
+                  onClick={logout}
+                >
+                  تسجيل الخروج
+                </button>
+              </li>
+            </ul>
+          </div>
         </div>
       </nav>
     );
   }
-
 
 
   return (
