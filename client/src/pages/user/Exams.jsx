@@ -75,7 +75,7 @@ const Exams = () => {
                 
                 <ul className="list-unstyled">
                   <li className="mb-2" style={{ fontSize: "0.9rem", opacity: 0.95 }}>
-                    • اختر المواضيع والصعوبة
+                    • اختر المواضيع 
                   </li>
                   <li className="mb-2" style={{ fontSize: "0.9rem", opacity: 0.95 }}>
                     • حدد عدد الأسئلة والوقت
@@ -101,7 +101,7 @@ const Exams = () => {
                   onMouseLeave={(e) => e.currentTarget.style.background = "rgba(255, 255, 255, 0.2)"}
                 >
                   <FaCog className="me-2" />
-                  إنشاء اختبار مخصص
+                   إنشاء اختبار مخصص
                 </button>
               </div>
             </div>
