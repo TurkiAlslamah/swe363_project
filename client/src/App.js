@@ -14,6 +14,8 @@ import CustomTest from "./pages/user/CustomTest";
 import Profile from "./pages/user/Profile";
 import TestResult from "./pages/user/TestResult";
 import CustomTestQuestions from "./pages/user/CustomTestQuestions";
+import DailyTest from "./pages/user/DailyTest";
+
 
 // Admin pages
 
@@ -107,6 +109,15 @@ function AppContent() {
             element={ 
               <ProtectedRoute allowedRoles={["user"]}>
                 <TestResult />
+              </ProtectedRoute>
+            }
+          />
+          <Route  
+            path="/daily-test"
+            element={
+              <ProtectedRoute allowedRoles={["user"]}>
+
+                <DailyTest />
               </ProtectedRoute>
             }
           />
