@@ -31,50 +31,50 @@ export default function Header() {
 
         {/* وسط: روابط الأدمن */}
        {/* وسط: روابط الأدمن */}
-<div className="mx-auto d-flex align-items-center gap-3">
-  
-  {/* الصفحة الرئيسية */}
-  <Link
-    to="/admin/dashboard"
-    className="d-flex align-items-center px-3 py-2 rounded-pill text-decoration-none"
-    style={{
-      backgroundColor: isActiveAdmin("/admin/dashboard") ? "#4B0082" : "transparent",
-      color: isActiveAdmin("/admin/dashboard") ? "#ffffff" : "#4B0082",
-      fontWeight: 600,
-    }}
-  >
-    <FaHome size={18} className="ms-1" />
-    الصفحة الرئيسة
-  </Link>
+        <div className="mx-auto d-flex align-items-center gap-3">
+          
+          {/* الصفحة الرئيسية */}
+          <Link
+            to="/admin/dashboard"
+            className="d-flex align-items-center px-3 py-2 rounded-pill text-decoration-none"
+            style={{
+              backgroundColor: isActiveAdmin("/admin/dashboard") ? "#4B0082" : "transparent",
+              color: isActiveAdmin("/admin/dashboard") ? "#ffffff" : "#4B0082",
+              fontWeight: 600,
+            }}
+          >
+            <FaHome size={18} className="ms-1" />
+            الصفحة الرئيسة
+          </Link>
 
-  {/* إدارة المستخدمين */}
-  <Link
-    to="/admin/users"
-    className="d-flex align-items-center px-3 py-2 rounded-pill text-decoration-none"
-    style={{
-      backgroundColor: isActiveAdmin("/admin/users") ? "#4B0082" : "transparent",
-      color: isActiveAdmin("/admin/users") ? "#ffffff" : "#6b7280",
-      fontWeight: 500,
-    }}
-  >
-    <FaUsers size={18} className="ms-1" />
-    إدارة المستخدمين
-  </Link>
+          {/* إدارة المستخدمين */}
+          <Link
+            to="/admin/users"
+            className="d-flex align-items-center px-3 py-2 rounded-pill text-decoration-none"
+            style={{
+              backgroundColor: isActiveAdmin("/admin/users") ? "#4B0082" : "transparent",
+              color: isActiveAdmin("/admin/users") ? "#ffffff" : "#6b7280",
+              fontWeight: 500,
+            }}
+          >
+            <FaUsers size={18} className="ms-1" />
+            إدارة المستخدمين
+          </Link>
 
-  {/* مراجعة الأسئلة */}
-  <Link
-    to="/admin/review"
-    className="d-flex align-items-center px-3 py-2 rounded-pill text-decoration-none"
-    style={{
-      backgroundColor: isActiveAdmin("/admin/review") ? "#4B0082" : "transparent",
-      color: isActiveAdmin("/admin/review") ? "#ffffff" : "#6b7280",
-      fontWeight: 500,
-    }}
-  >
-    <MdQuiz size={20} className="ms-1" />
-    مراجعة الأسئلة
-  </Link>
-</div>
+          {/* مراجعة الأسئلة */}
+          <Link
+            to="/admin/review"
+            className="d-flex align-items-center px-3 py-2 rounded-pill text-decoration-none"
+            style={{
+              backgroundColor: isActiveAdmin("/admin/review") ? "#4B0082" : "transparent",
+              color: isActiveAdmin("/admin/review") ? "#ffffff" : "#6b7280",
+              fontWeight: 500,
+            }}
+          >
+            <MdQuiz size={20} className="ms-1" />
+            مراجعة الأسئلة
+          </Link>
+        </div>
 
 
         <div className="d-flex align-items-center gap-2">
@@ -191,7 +191,7 @@ export default function Header() {
       )}
 
       {/* LOGGED IN USER - Avatar */}
-      {/* LOGGED IN USER - Avatar */}
+      
 {isLoggedIn && user.role === "user" && (
   <div className="dropdown">
     <img
@@ -215,11 +215,6 @@ export default function Header() {
           الملف الشخصي
         </Link>
       </li>
-      <li>
-        <Link className="dropdown-item" to="/settings">
-          الإعدادات
-        </Link>
-      </li>
       <li><hr className="dropdown-divider" /></li>
       <li>
         <button 
@@ -233,7 +228,7 @@ export default function Header() {
   </div>
 )}
 
-      {/* LOGGED IN (admin) */}
+     
       
       {/* LOGGED IN (teacher) */}
     </div>
