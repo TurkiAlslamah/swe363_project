@@ -142,8 +142,7 @@ return (
     </Link>
 
     {/* CENTER LEFT – AVATAR (ALWAYS VISIBLE) */}
-    <div className="d-flex align-items-center gap-5 me-auto">
-
+    <div className="d-flex align-items-center gap-3 order-lg-3">
 
       {!isLoggedIn && (
         <>
