@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { 
   FaFire, 
   FaTrophy, 
@@ -28,15 +28,15 @@ const Exams = () => {
       totalTests: 5,
     });
   }, []);
+  
 
   const handleCustomTest = () => {
     navigate("/exams/custom");
   };
 
   const handleDailyTest = () => {
-    // navigate("/exams/daily");
-    alert("We need questions for daily test first so we wanna make it later in backend");
-  };
+  navigate("/daily-test");
+};
 
   return (
     <div style={{ direction: "rtl", minHeight: "100vh", background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)", padding: "2rem" }}>
@@ -150,22 +150,23 @@ const Exams = () => {
                 </ul>
 
                 {/* Button */}
-                <button 
-                  className="btn btn-light w-100 mt-3 fw-bold"
-                  style={{
+                <Link 
+                to="/daily-test"
+                className="btn btn-light w-100 mt-3 fw-bold text-decoration-none"
+                style={{
                     background: "rgba(255, 255, 255, 0.2)",
                     border: "none",
                     color: "white",
                     borderRadius: "15px",
                     padding: "0.75rem",
                     backdropFilter: "blur(10px)",
-                  }}
-                  onClick={handleDailyTest}
-                  onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255, 255, 255, 0.3)"}
-                  onMouseLeave={(e) => e.currentTarget.style.background = "rgba(255, 255, 255, 0.2)"}
+                    display: "block"
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255, 255, 255, 0.3)"}
+                onMouseLeave={(e) => e.currentTarget.style.background = "rgba(255, 255, 255, 0.2)"}
                 >
-                  ▶ ابدأ الاختبار اليومي
-                </button>
+                ▶ ابدأ الاختبار اليومي
+                </Link>
               </div>
             </div>
           </div>
