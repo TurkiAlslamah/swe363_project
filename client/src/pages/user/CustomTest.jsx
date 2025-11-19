@@ -47,11 +47,11 @@ const CustomTest = () => {
   });
 
   const verbalTopicsData = [
-    { key: "readingComprehension", label: "استيعاب المقروء", subtitle: "فقرة لفظيه", icon: FaBookOpen, color: "#3b82f6" },
-    { key: "analogies", label: "التناظر اللفظي", subtitle: "فقرة لفظيه", icon: FaChartLine, color: "#3b82f6" },
-    { key: "errorDetection", label: "إكمال الجمل", subtitle: "فقرة لفظيه", icon: FaFileAlt, color: "#3b82f6" },
-    { key: "sentenceCompletion", label: "الخطأ السياقي", subtitle: "فقرة لفظيه", icon: FaEye, color: "#3b82f6" },
-    { key: "unusualWord", label: "المفردة الشاذة", subtitle: "فقرة لفظيه", icon: FaChartLine, color: "#3b82f6" },
+    { key: "readingComprehension", label: "استيعاب المقروء", subtitle: "فئة لفظيه", icon: FaBookOpen, color: "#3b82f6" },
+    { key: "analogies", label: "التناظر اللفظي", subtitle: "فئة لفظيه", icon: FaChartLine, color: "#3b82f6" },
+    { key: "errorDetection", label: "إكمال الجمل", subtitle: "فئة لفظيه", icon: FaFileAlt, color: "#3b82f6" },
+    { key: "sentenceCompletion", label: "الخطأ السياقي", subtitle: "فئة لفظيه", icon: FaEye, color: "#3b82f6" },
+    { key: "unusualWord", label: "المفردة الشاذة", subtitle: "فئة لفظيه", icon: FaChartLine, color: "#3b82f6" },
   ];
 
   const quantTopicsData = [

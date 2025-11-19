@@ -11,6 +11,7 @@ import Training from "./pages/user/Training";
 import TrainingQuestions from "./pages/user/TrainingQuestions";
 import Exams from "./pages/user/Exams";
 import CustomTest from "./pages/user/CustomTest";
+import Profile from "./pages/user/Profile";
 // Admin pages
 
 import UserManagement from "./pages/admin/UserManagement";
@@ -82,6 +83,14 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/profile"
+            element={ 
+              <ProtectedRoute allowedRoles={["user"]}>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
 
 
 
@@ -127,6 +136,7 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
+          
 
              {/* ========= Admin Routes ========= */}
           <Route
