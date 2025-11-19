@@ -14,6 +14,7 @@ import {
   FaBook,
   FaRuler,
   FaFileAlt
+  
 } from "react-icons/fa";
 
 const CustomTest = () => {
@@ -77,20 +78,32 @@ const CustomTest = () => {
   };
 
   const getTotalTime = () => {
-    const total = getTotalQuestions();
-    return settings.timed ? settings.totalTime : Math.ceil(total * (settings.timePerQuestion / 60));
-  };
+  const total = getTotalQuestions();
+  if (settings.timed) {
+    return settings.totalTime;
+  }
+  
+  return Math.ceil(total * (settings.timePerQuestion / 60));
+};
 
   const handleStartTest = () => {
-    const totalQuestions = getTotalQuestions();
-    if (totalQuestions === 0) {
-      alert("يرجى اختيار عدد الأسئلة من الموضوعات أدناه");
-      return;
+  const totalQuestions = getTotalQuestions();
+  if (totalQuestions === 0) {
+    alert("يرجى اختيار عدد الأسئلة من الموضوعات أدناه");
+    return;
+  }
+  
+  // Navigate to test questions
+  navigate('/exams/custom/start', {
+    state: {
+      settings,
+      verbalTopics,
+      quantTopics,
+      activeTab,
+      totalQuestions
     }
-    alert("we gonna handle it with the backend later");
-    
-   
-  };
+  });
+};
 
   const currentTopics = activeTab === "verbal" ? verbalTopicsData : quantTopicsData;
   const currentSelections = activeTab === "verbal" ? verbalTopics : quantTopics;
@@ -117,31 +130,34 @@ const CustomTest = () => {
 
               
 
-                {/* Timed Toggle */}
+               {/* Timed Toggle */}
                 <div className="d-flex justify-content-between align-items-center py-2 border-bottom">
-                  <div>
-                    <div className="fw-medium">التوقيت</div>
-                    <small className="text-muted">سيتم حساب الوقت</small>
-                  </div>
-                  <div className="form-check form-switch">
+                <div>
+                    <div className="fw-medium">سيتم حساب الوقت</div>
+                    <small className="text-muted">تفعيل المؤقت</small>
+                </div>
+                <div className="form-check form-switch">
                     <input 
-                      className="form-check-input" 
-                      type="checkbox" 
-                      checked={settings.timed}
-                      onChange={(e) => setSettings({...settings, timed: e.target.checked})}
+                    className="form-check-input" 
+                    type="checkbox" 
+                    checked={settings.timed}
+                    onChange={(e) => setSettings({...settings, timed: e.target.checked})}
                     />
-                  </div>
+                </div>
                 </div>
 
                 {/* Time Settings */}
+                {/* Time Settings - FIXED */}
                 <div className="py-2">
-                  <div className="fw-medium mb-2">الوقت لكل سؤال</div>
-                  <div className="d-flex justify-content-between align-items-center">
-                    <span className="text-muted">3 دقائق</span>
-                    <span className="text-primary fw-bold">30 ثانية</span>
-                    <span className="text-muted">30 ثانية</span>
-                  </div>
-                  <input 
+                <div className="d-flex justify-content-between align-items-center mb-2">
+                    <span className="fw-medium">الوقت لكل سؤال</span>
+                    <span className="fw-bold text-primary">{settings.timePerQuestion} ثانية</span>
+                </div>
+                <div className="d-flex justify-content-between align-items-center mb-2">
+                    <small className="text-muted">30 ثانية</small>
+                    <small className="text-muted">3 دقائق</small>
+                </div>
+                <input 
                     type="range" 
                     className="form-range" 
                     min="30" 
@@ -149,7 +165,7 @@ const CustomTest = () => {
                     step="30"
                     value={settings.timePerQuestion}
                     onChange={(e) => setSettings({...settings, timePerQuestion: parseInt(e.target.value)})}
-                  />
+                />
                 </div>
               </div>
             </div>
@@ -190,6 +206,19 @@ const CustomTest = () => {
               </div>
             </div>
           </div>
+
+          {/*instruture to test the custom test */}
+          <div className="col-12 mb-4">
+            <div className="alert alert-info d-flex align-items-center " role="alert">
+              <FaBookOpen className="me-2 " />
+              <div>
+                for testing purpose pls use only max 2 questions of algebra 
+              </div>
+            </div>
+          </div>
+
+
+          
 
           {/* Right Content - Topics */}
           <div className="col-lg-9">
