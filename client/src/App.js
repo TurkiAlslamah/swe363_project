@@ -12,6 +12,9 @@ import TrainingQuestions from "./pages/user/TrainingQuestions";
 import Exams from "./pages/user/Exams";
 import CustomTest from "./pages/user/CustomTest";
 import Profile from "./pages/user/Profile";
+import TestResult from "./pages/user/TestResult";
+import CustomTestQuestions from "./pages/user/CustomTestQuestions";
+
 // Admin pages
 
 import UserManagement from "./pages/admin/UserManagement";
@@ -88,6 +91,22 @@ function AppContent() {
             element={ 
               <ProtectedRoute allowedRoles={["user"]}>
                 <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/exams/custom/start"
+            element={ 
+              <ProtectedRoute allowedRoles={["user"]}>
+                <CustomTestQuestions />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/test-result"
+            element={ 
+              <ProtectedRoute allowedRoles={["user"]}>
+                <TestResult />
               </ProtectedRoute>
             }
           />
