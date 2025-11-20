@@ -261,6 +261,7 @@ export default function Header() {
       style={{
         backgroundColor: "#fffefeff",
         borderBottom: "1px solid #dee2e6",
+        
       }}
     >
       {/* RIGHT SIDE - LOGO */}

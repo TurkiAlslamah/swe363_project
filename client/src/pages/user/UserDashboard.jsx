@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
- 
+ import { FaStar, FaBullseye, FaEdit, FaBook } from "react-icons/fa";
+
 export default function UserDashboard() {
   const [dailyGoal, setDailyGoal] = useState(50);
   const [completed, setCompleted] = useState(25);
@@ -32,8 +33,9 @@ export default function UserDashboard() {
         }}>
 <div className="card-body p-4 p-md-5">
 <h1 className="text-white fw-bold mb-3" style={{ fontSize: '2rem' }}>
-              ✨ مرحباً، طالبنا المجتهد
+  <FaStar className="me-2" /> مرحباً، طالبنا المجتهد
 </h1>
+
 <p className="text-white mb-0" style={{ fontSize: '1.1rem', opacity: 0.95 }}>
               اليوم يوم جديد لتطوير مهاراتك في اختبار القدرات. هيا نبدأ!
 </p>
@@ -46,7 +48,7 @@ export default function UserDashboard() {
             {/* Header */}
 <div className="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
 <h2 className="fw-bold mb-0" style={{ fontSize: '1.75rem' }}>
-                🎯 خطة الطالب
+                خطتك
 </h2>
               {!isEditingGoal ? (
 <button 

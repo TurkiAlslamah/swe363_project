@@ -45,7 +45,7 @@ function AppContent() {
       {/* Global Header - always shown */}
       <Header />
       
-      <main style={{ minHeight: "80vh", paddingTop: "80px" }}>
+      <main style={{ minHeight: "80vh", paddingTop: "56px" }}>
         <Routes>
           {/* Public */}
           <Route path="/" element={<Home />} />

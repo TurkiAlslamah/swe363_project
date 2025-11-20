@@ -115,6 +115,15 @@ const CustomTest = () => {
         <div className="text-center mb-4">
           <h2 className="fw-bold">إنشاء اختبار مخصص</h2>
           <p className="text-muted">صمم اختباراتك المثالي حسب احتياجاتك</p>
+           {/*instruture to test the custom test */}
+          <div className="col-12 mb-4">
+            <div className="alert alert-info d-flex align-items-center " role="alert">
+              <FaBookOpen className="me-2 " />
+              <div>
+                for testing purpose pls use only max 2 questions of algebra 
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="row g-4">
@@ -207,15 +216,7 @@ const CustomTest = () => {
             </div>
           </div>
 
-          {/*instruture to test the custom test */}
-          <div className="col-12 mb-4">
-            <div className="alert alert-info d-flex align-items-center " role="alert">
-              <FaBookOpen className="me-2 " />
-              <div>
-                for testing purpose pls use only max 2 questions of algebra 
-              </div>
-            </div>
-          </div>
+         
 
 
           
