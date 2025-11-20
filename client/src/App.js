@@ -16,6 +16,8 @@ import TestResult from "./pages/user/TestResult";
 import CustomTestQuestions from "./pages/user/CustomTestQuestions";
 import DailyTest from "./pages/user/DailyTest";
 
+import Stats from "./pages/user/Stats";
+import ReviewWrongAnswers from "./pages/user/ReviewWrongAnswers";
 
 // Admin pages
 
@@ -117,8 +119,8 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
-
-
+         <Route  path="/stats"  element={     <ProtectedRoute allowedRoles={["user"]}>      <Stats />    </ProtectedRoute>  }/> <Route  path="/review-wrong-answers"  element={     <ProtectedRoute allowedRoles={["user"]}>      <ReviewWrongAnswers />    </ProtectedRoute>  }/>
+ 
 
           {/* Teacher Routes */}
           <Route path="/teacher/login" element={<TeacherLogin />} />
