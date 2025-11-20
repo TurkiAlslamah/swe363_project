@@ -1,7 +1,9 @@
 body {
   font-family: Arial, sans-serif;
   text-align: center;
-  margin-top: 50px;
+  margin: 0;
+  padding: 0;
+  
 }
 /* Override Bootstrap's primary color to purple */
 :root {

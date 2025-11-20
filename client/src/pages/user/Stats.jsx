@@ -89,7 +89,7 @@ export default function Stats() {
         
         {/* Header */}
         <div className="text-center mb-5">
-          <h1 className="fw-bold mb-2">📊 إحصائياتي</h1>
+          <h1 className="fw-bold mb-2"><FaChartLine className="me-2" /> إحصائياتي</h1>
           <p className="text-muted">تابع تقدمك وأدائك في التدريبات والاختبارات</p>
         </div>
 
@@ -101,7 +101,7 @@ export default function Stats() {
           <div className="card-body p-5 text-white">
             <div className="row align-items-center">
               <div className="col-md-8">
-                <h2 className="fw-bold mb-3">الأداء الإجمالي</h2>
+                <h2 className="fw-bold mb-3">احصائيات التدريب</h2>
                 <div className="row g-4">
                   <div className="col-6">
                     <div className="d-flex align-items-center gap-3">
@@ -130,15 +130,7 @@ export default function Stats() {
                       </div>
                     </div>
                   </div>
-                  <div className="col-6">
-                    <div className="d-flex align-items-center gap-3">
-                      <FaClock size={30} />
-                      <div>
-                        <h4 className="fw-bold mb-0">{Math.floor(stats.totalTimeSpent / 60)}h {stats.totalTimeSpent % 60}m</h4>
-                        <small>الوقت الإجمالي</small>
-                      </div>
-                    </div>
-                  </div>
+                  
                 </div>
               </div>
               <div className="col-md-4 text-center">
@@ -175,40 +167,11 @@ export default function Stats() {
           </div>
         </div>
 
-        {/* Training Section */}
-        <div className="mb-5">
-          <h3 className="fw-bold mb-4">📚 إحصائيات التدريب</h3>
-          <div className="row">
-            <StatCard
-              icon={FaBook}
-              title="أسئلة التدريب"
-              value={stats.totalTrainingQuestions}
-              subtitle="إجمالي الأسئلة المحلولة"
-              color="#3b82f6"
-              bgColor="#dbeafe"
-            />
-            <StatCard
-              icon={FaCheckCircle}
-              title="إجابات صحيحة"
-              value={stats.correctTraining}
-              subtitle={`نسبة الدقة: ${stats.trainingAccuracy}%`}
-              color="#10b981"
-              bgColor="#d1fae5"
-            />
-            <StatCard
-              icon={FaTimesCircle}
-              title="إجابات خاطئة"
-              value={stats.wrongTraining}
-              subtitle="للمراجعة"
-              color="#ef4444"
-              bgColor="#fee2e2"
-            />
-          </div>
-        </div>
+      
 
         {/* Exam Section */}
         <div className="mb-5">
-          <h3 className="fw-bold mb-4">🎯 إحصائيات الاختبارات</h3>
+          <h3 className="fw-bold mb-4"><FaClipboardCheck className="me-2" /> إحصائيات الاختبارات</h3>
           <div className="row">
             <StatCard
               icon={FaClipboardCheck}
@@ -239,7 +202,7 @@ export default function Stats() {
 
         {/* Activity Section */}
         <div className="mb-5">
-          <h3 className="fw-bold mb-4">🔥 النشاط والإنجازات</h3>
+          <h3 className="fw-bold mb-4"><FaFire className="me-2" /> النشاط والإنجازات</h3>
           <div className="row">
             <StatCard
               icon={FaFire}
