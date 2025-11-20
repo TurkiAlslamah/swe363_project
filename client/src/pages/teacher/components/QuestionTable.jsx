@@ -18,14 +18,22 @@ export default function QuestionTable({ questions, onEdit, onDelete }) {
   };
 
   return (
-    <div className="table-responsive" style={{ direction: "rtl" }}>
-      <table className="table table-hover">
+    <div className="table-responsive" style={{ direction: "rtl", overflowX: "auto" }}>
+      <table className="table table-hover mb-0">
         <thead>
           <tr>
-            <th style={{ color: "#6B46C1", fontWeight: "bold" }}>رقم السؤال</th>
-            <th style={{ color: "#6B46C1", fontWeight: "bold" }}>السؤال</th>
-            <th style={{ color: "#6B46C1", fontWeight: "bold" }}>الحالة</th>
-            <th style={{ color: "#6B46C1", fontWeight: "bold" }}>الإجراءات</th>
+            <th style={{ color: "#6B46C1", fontWeight: "bold", whiteSpace: "nowrap", minWidth: "80px" }}>
+              رقم السؤال
+            </th>
+            <th style={{ color: "#6B46C1", fontWeight: "bold", minWidth: "200px" }}>
+              السؤال
+            </th>
+            <th style={{ color: "#6B46C1", fontWeight: "bold", whiteSpace: "nowrap", minWidth: "120px" }}>
+              الحالة
+            </th>
+            <th style={{ color: "#6B46C1", fontWeight: "bold", whiteSpace: "nowrap", minWidth: "140px" }}>
+              الإجراءات
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -38,26 +46,36 @@ export default function QuestionTable({ questions, onEdit, onDelete }) {
           ) : (
             questions.map((question) => (
               <tr key={question.id}>
-                <td>{question.questionOrder || question.id}</td>
+                <td style={{ whiteSpace: "nowrap" }}>{question.questionOrder || question.id}</td>
                 <td>
-                  {question.questionText.length > 50
-                    ? question.questionText.substring(0, 50) + "..."
-                    : question.questionText}
+                  <div style={{ 
+                    maxWidth: "100%",
+                    wordBreak: "break-word",
+                    overflowWrap: "break-word"
+                  }}>
+                    {question.questionText.length > 50
+                      ? question.questionText.substring(0, 50) + "..."
+                      : question.questionText}
+                  </div>
                 </td>
-                <td>{getStatusBadge(question.status)}</td>
+                <td style={{ whiteSpace: "nowrap" }}>{getStatusBadge(question.status)}</td>
                 <td>
-                  <button
-                    className="btn btn-sm btn-primary me-2"
-                    onClick={() => onEdit(question.id)}
-                  >
-                    تعديل
-                  </button>
-                  <button
-                    className="btn btn-sm btn-danger"
-                    onClick={() => onDelete(question.id)}
-                  >
-                    حذف
-                  </button>
+                  <div className="d-flex flex-wrap gap-1">
+                    <button
+                      className="btn btn-sm btn-primary"
+                      onClick={() => onEdit(question.id)}
+                      style={{ whiteSpace: "nowrap" }}
+                    >
+                      تعديل
+                    </button>
+                    <button
+                      className="btn btn-sm btn-danger"
+                      onClick={() => onDelete(question.id)}
+                      style={{ whiteSpace: "nowrap" }}
+                    >
+                      حذف
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))

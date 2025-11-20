@@ -32,22 +32,18 @@ import Feedback from "./pages/teacher/Feedback";
 
 // Navigation components
 import Header from "./components/common/Header";
-import TeacherNav from "./pages/teacher/components/TeacherNav";
+
 import Footer from "./components/common/Footer";
 
 function AppContent() {
   const location = useLocation();
-  const isTeacherRoute = location.pathname.startsWith('/teacher');
 
   return (
     <>
       {/* Global Header - always shown */}
       <Header />
       
-      {/* Teacher-specific navigation - shown below Header on teacher routes */}
-      {isTeacherRoute && <TeacherNav />}
-      
-      <main style={{ minHeight: "80vh", paddingTop: isTeacherRoute ? "120px" : "80px" }}>
+      <main style={{ minHeight: "80vh", paddingTop: "80px" }}>
         <Routes>
           {/* Public */}
           <Route path="/" element={<Home />} />

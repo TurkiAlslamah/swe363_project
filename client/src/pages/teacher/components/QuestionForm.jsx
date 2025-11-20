@@ -19,12 +19,24 @@ export default function QuestionForm({ initialData = null, onSubmit, onCancel })
     correctAnswer: initialData?.correctAnswer || 1
   });
 
+  const [errors, setErrors] = useState({});
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     // Convert questionOrder to number
     if (name === 'questionOrder') {
-      const numValue = parseInt(value) || 0;
-      setFormData(prev => ({ ...prev, [name]: numValue }));
+      const numValue = parseInt(value);
+      if (isNaN(numValue) || numValue < 1) {
+        setErrors(prev => ({ ...prev, questionOrder: 'يجب أن يكون رقم السؤال رقماً صحيحاً أكبر من الصفر' }));
+      } else {
+        // Clear error if valid number
+        setErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors.questionOrder;
+          return newErrors;
+        });
+      }
+      setFormData(prev => ({ ...prev, [name]: numValue || 0 }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
@@ -48,6 +60,16 @@ export default function QuestionForm({ initialData = null, onSubmit, onCancel })
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // Validate question order before submit
+    const numValue = parseInt(formData.questionOrder);
+    if (isNaN(numValue) || numValue < 1) {
+      setErrors(prev => ({ ...prev, questionOrder: 'يجب أن يكون رقم السؤال رقماً صحيحاً أكبر من الصفر' }));
+      return;
+    }
+
+    // Clear errors and submit
+    setErrors({});
     onSubmit(formData);
   };
 
@@ -68,16 +90,17 @@ export default function QuestionForm({ initialData = null, onSubmit, onCancel })
 
       <div className="mb-3">
         <label className="form-label fw-bold">صورة السؤال (اختياري)</label>
-        <div className="d-flex align-items-center">
+        <div className="d-flex align-items-center flex-wrap gap-2">
           <input
             type="file"
-            className="form-control"
+            className="form-control flex-fill"
             accept="image/*"
             onChange={handleFileChange}
+            style={{ minWidth: "200px" }}
           />
           <button
             type="button"
-            className="btn btn-outline-primary ms-2"
+            className="btn btn-outline-primary"
             style={{
               width: "40px",
               height: "40px",
@@ -85,7 +108,8 @@ export default function QuestionForm({ initialData = null, onSubmit, onCancel })
               fontSize: "1.5rem",
               display: "flex",
               alignItems: "center",
-              justifyContent: "center"
+              justifyContent: "center",
+              flexShrink: 0
             }}
             onClick={() => document.querySelector('input[type="file"]').click()}
           >
@@ -95,7 +119,7 @@ export default function QuestionForm({ initialData = null, onSubmit, onCancel })
       </div>
 
       <div className="row mb-3">
-        <div className="col-md-6">
+        <div className="col-12 col-md-6 mb-2 mb-md-0">
           <label className="form-label fw-bold">نوع السؤال *</label>
           <select
             className="form-select"
@@ -108,7 +132,7 @@ export default function QuestionForm({ initialData = null, onSubmit, onCancel })
             <option value="صورة">صورة</option>
           </select>
         </div>
-        <div className="col-md-6">
+        <div className="col-12 col-md-6">
           <label className="form-label fw-bold">النوع (لفظي / كمي) *</label>
           <select
             className="form-select"
@@ -144,16 +168,17 @@ export default function QuestionForm({ initialData = null, onSubmit, onCancel })
           name="passageLink"
           value={formData.passageLink}
           onChange={handleInputChange}
-          placeholder="رقم القطعة (إن وجدت)"
+          placeholder="رقم القطعة (إن وجدت) - الأسئلة في نفس القطعة يتم ترتيبها معاً"
           style={{ textAlign: "right" }}
         />
+        <small className="text-muted">اتركه فارغاً إذا كان السؤال مستقلاً</small>
       </div>
 
       <div className="mb-3">
         <label className="form-label fw-bold">رقم السؤال (ترتيب السؤال) *</label>
         <input
           type="number"
-          className="form-control"
+          className={`form-control ${errors.questionOrder ? 'is-invalid' : ''}`}
           name="questionOrder"
           value={formData.questionOrder || ''}
           onChange={handleInputChange}
@@ -161,7 +186,12 @@ export default function QuestionForm({ initialData = null, onSubmit, onCancel })
           required
           style={{ textAlign: "right" }}
         />
-        <small className="text-muted">يمكنك تعديل رقم السؤال يدوياً</small>
+        {errors.questionOrder && (
+          <div className="invalid-feedback d-block">
+            {errors.questionOrder}
+          </div>
+        )}
+        <small className="text-muted">يمكنك إدخال أي رقم - سيتم إعادة ترتيب الأسئلة تلقائياً ضمن نفس القطعة</small>
       </div>
 
       <div className="mb-3">
@@ -205,7 +235,7 @@ export default function QuestionForm({ initialData = null, onSubmit, onCancel })
         ))}
       </div>
 
-      <div className="d-flex justify-content-end gap-2 mt-4">
+      <div className="d-flex flex-column flex-sm-row justify-content-end gap-2 mt-4">
         <button type="button" className="btn btn-secondary" onClick={onCancel}>
           إلغاء
         </button>

@@ -30,18 +30,18 @@ export default function MyQuestions() {
     <div style={{ 
       minHeight: "100vh",
       background: "linear-gradient(180deg, #f4e6ff 0%, #ffffff 100%)",
-      direction: "rtl"
+      direction: "rtl",
+      paddingTop: "80px"
     }}>
-      
-      <div className="container py-4">
-        <div className="d-flex justify-content-between align-items-center mb-4">
-          <h2 className="fw-bold mb-0" style={{ color: "#6B46C1" }}>
+      <div className="container py-4 px-2 px-md-4">
+        <div className="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-4 gap-2">
+          <h2 className="fw-bold mb-0" style={{ color: "#6B46C1", fontSize: "clamp(1.25rem, 4vw, 1.75rem)" }}>
             أسئلتي
           </h2>
           <button
-            className="btn btn-primary"
+            className="btn btn-primary w-100 w-sm-auto"
             onClick={() => navigate('/teacher/questions/add')}
-            style={{ borderRadius: "8px" }}
+            style={{ borderRadius: "8px", whiteSpace: "nowrap" }}
           >
             <i className="bi bi-plus-circle me-1"></i>
             إضافة سؤال
@@ -49,7 +49,7 @@ export default function MyQuestions() {
         </div>
 
         <div className="card shadow-sm border-0">
-          <div className="card-body p-4">
+          <div className="card-body p-2 p-md-4">
             <QuestionTable
               questions={questions}
               onEdit={handleEdit}
