@@ -52,11 +52,11 @@ export default function Feedback() {
     <div style={{ 
       minHeight: "100vh",
       background: "linear-gradient(180deg, #f4e6ff 0%, #ffffff 100%)",
-      direction: "rtl"
+      direction: "rtl",
+      paddingTop: "80px"
     }}>
-      
-      <div className="container py-4">
-        <h2 className="mb-4 fw-bold" style={{ color: "#6B46C1" }}>
+      <div className="container py-4 px-2 px-md-4">
+        <h2 className="mb-4 fw-bold" style={{ color: "#6B46C1", fontSize: "clamp(1.25rem, 4vw, 1.75rem)" }}>
           التقييم
         </h2>
 
@@ -66,21 +66,29 @@ export default function Feedback() {
           </div>
         )}
 
-        <SearchBar
-          placeholder="ابحث عن طالب بالاسم أو الرقم..."
-          value={searchQuery}
-          onChange={handleSearch}
-        />
+        <div className="mb-3">
+          <SearchBar
+            placeholder="ابحث عن طالب بالاسم أو الرقم..."
+            value={searchQuery}
+            onChange={handleSearch}
+          />
+        </div>
 
         <div className="card shadow-sm border-0">
-          <div className="card-body p-4">
-            <div className="table-responsive">
-              <table className="table table-hover">
+          <div className="card-body p-2 p-md-4">
+            <div className="table-responsive" style={{ overflowX: "auto" }}>
+              <table className="table table-hover mb-0">
                 <thead>
                   <tr>
-                    <th style={{ color: "#6B46C1", fontWeight: "bold" }}>رقم الطالب</th>
-                    <th style={{ color: "#6B46C1", fontWeight: "bold" }}>اسم الطالب</th>
-                    <th style={{ color: "#6B46C1", fontWeight: "bold" }}>الإجراءات</th>
+                    <th style={{ color: "#6B46C1", fontWeight: "bold", whiteSpace: "nowrap", minWidth: "100px" }}>
+                      رقم الطالب
+                    </th>
+                    <th style={{ color: "#6B46C1", fontWeight: "bold", minWidth: "150px" }}>
+                      اسم الطالب
+                    </th>
+                    <th style={{ color: "#6B46C1", fontWeight: "bold", whiteSpace: "nowrap", minWidth: "200px" }}>
+                      الإجراءات
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -93,21 +101,25 @@ export default function Feedback() {
                   ) : (
                     students.map((student) => (
                       <tr key={student.id}>
-                        <td>{student.studentNumber}</td>
+                        <td style={{ whiteSpace: "nowrap" }}>{student.studentNumber}</td>
                         <td>{student.studentName}</td>
                         <td>
-                          <button
-                            className="btn btn-sm btn-success me-2"
-                            onClick={() => handleViewPerformance(student)}
-                          >
-                            الأداء
-                          </button>
-                          <button
-                            className="btn btn-sm btn-success"
-                            onClick={() => handleSendFeedback(student)}
-                          >
-                            إرسال تقييم
-                          </button>
+                          <div className="d-flex flex-wrap gap-1">
+                            <button
+                              className="btn btn-sm btn-success"
+                              onClick={() => handleViewPerformance(student)}
+                              style={{ whiteSpace: "nowrap" }}
+                            >
+                              الأداء
+                            </button>
+                            <button
+                              className="btn btn-sm btn-success"
+                              onClick={() => handleSendFeedback(student)}
+                              style={{ whiteSpace: "nowrap" }}
+                            >
+                              إرسال تقييم
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))

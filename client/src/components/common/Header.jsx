@@ -5,13 +5,19 @@ import { MdMenuBook } from "react-icons/md";
 import { MdQuiz } from "react-icons/md";
 import { BsGraphUp } from "react-icons/bs";
 import { FaUsers } from "react-icons/fa";
+import { FaQuestionCircle, FaPlusCircle } from "react-icons/fa";
+import { MdFeedback } from "react-icons/md";
+
 export default function Header() {
   const { user, logout } = useAuth();
   const isLoggedIn = !!user;
   const location = useLocation();
   const isAdmin = isLoggedIn && user.role === "admin";
+  const isTeacher = isLoggedIn && user.role === "teacher";
   const isActiveAdmin = (path) => location.pathname.startsWith(path);
-    // ====== Header for ADMIN ======
+  const isActiveTeacher = (path) => location.pathname.startsWith(path);
+
+  // ====== Header for ADMIN ======
   if (isAdmin) {
     return (
       <nav
@@ -126,125 +132,244 @@ export default function Header() {
     );
   }
 
+  // ====== Header for TEACHER ======
+  if (isTeacher) {
+    return (
+      <nav
+        className="navbar navbar-expand-lg fixed-top px-4 py-2 shadow-sm"
+        style={{
+          backgroundColor: "#ffffff",
+          borderBottom: "1px solid #dee2e6",
+          direction: "rtl",
+        }}
+      >
+        {/* RIGHT SIDE - LOGO */}
+        <Link className="navbar-brand fw-bold text-dark" to="/teacher/dashboard">
+          SWE363
+        </Link>
 
-return (
-  <nav
-    className="navbar navbar-expand-lg px-4 py-2 shadow-sm fixed-top"
-    dir="rtl"
-    style={{
-      backgroundColor: "#fffefeff",
-      borderBottom: "1px solid #dee2e6",
-    }}
-  >
-    {/* RIGHT SIDE - LOGO */}
-    <Link className="navbar-brand fw-bold text-dark" to="/">
-      SWE363
-    </Link>
-
-    {/* CENTER LEFT – AVATAR (ALWAYS VISIBLE) */}
-    <div className="d-flex align-items-center gap-3 order-lg-3">
-
-      {!isLoggedIn && (
-        <>
-          <Link className="btn btn-outline-dark" to="/login">
-            تسجيل دخول
-          </Link>
-
-          <Link
-            className="btn text-white"
-            style={{
-              backgroundColor: "#4B0082",
-              borderRadius: "8px",
-              fontWeight: 500,
-              padding: "6px 14px",
-            }}
-            to="/register"
-          >
-            تسجيل حساب
-          </Link>
-        </>
-      )}
-
-      {isLoggedIn && user.role === "user" && (
-        <div className="dropdown">
-          <img
-            src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
-            width="32"
-            height="32"
-            className="rounded-circle dropdown-toggle"
-            role="button"
-            data-bs-toggle="dropdown"
-            aria-expanded="false"
-            alt="avatar"
-            style={{ cursor: "pointer" }}
-          />
-          <ul className="dropdown-menu dropdown-menu-start">
-            <li className="px-3 py-2 border-bottom">
-              <div className="fw-bold">{user.name || "المستخدم"}</div>
-              <small className="text-muted">{user.email}</small>
-            </li>
-
-            <li>
-              <Link className="dropdown-item" to="/profile">
-                الملف الشخصي
-              </Link>
-            </li>
-
-            <li><hr className="dropdown-divider" /></li>
-
-            <li>
-              <button className="dropdown-item text-danger" onClick={logout}>
-                تسجيل الخروج
-              </button>
-            </li>
-          </ul>
+        {/* CENTER LEFT – AVATAR (ALWAYS VISIBLE) */}
+        <div className="d-flex align-items-center gap-3 order-lg-3">
+          <div className="dropdown">
+            <img
+              src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
+              width="32"
+              height="32"
+              className="rounded-circle dropdown-toggle"
+              role="button"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+              alt="avatar"
+              style={{ cursor: "pointer" }}
+            />
+            <ul className="dropdown-menu dropdown-menu-start">
+              <li className="px-3 py-2 border-bottom">
+                <div className="fw-bold">{user.name || "المعلم"}</div>
+                <small className="text-muted">{user.email}</small>
+              </li>
+              <li>
+                <button className="dropdown-item" type="button">
+                  الملف الشخصي
+                </button>
+              </li>
+              <li>
+                <hr className="dropdown-divider" />
+              </li>
+              <li>
+                <button
+                  className="dropdown-item text-danger"
+                  type="button"
+                  onClick={logout}
+                >
+                  تسجيل الخروج
+                </button>
+              </li>
+            </ul>
+          </div>
         </div>
-      )}
-    </div>
 
-    {/* MOBILE TOGGLER – ONLY CONTROLS NAV LINKS */}
-    <button
-      className="navbar-toggler order-lg-2 "
-      type="button"
-      data-bs-toggle="collapse"
-      data-bs-target="#mainNavbar"
-      aria-controls="mainNavbar"
-      aria-expanded="false"
-      aria-label="Toggle navigation"
+        {/* MOBILE TOGGLER – ONLY CONTROLS NAV LINKS */}
+        <button
+          className="navbar-toggler order-lg-2"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#teacherNavbar"
+          aria-controls="teacherNavbar"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span className="navbar-toggler-icon"></span>
+        </button>
+
+        {/* COLLAPSIBLE LINKS */}
+        <div className="collapse navbar-collapse justify-content-center order-lg-1" id="teacherNavbar">
+          <div className="navbar-nav text-center gap-3">
+            <Link
+              to="/teacher/dashboard"
+              className="nav-link fw-bold d-flex align-items-center gap-2 justify-content-center"
+              style={{
+                color: isActiveTeacher("/teacher/dashboard") ? "#4B0082" : "#6b7280",
+              }}
+            >
+              <FaHome size={18} color={isActiveTeacher("/teacher/dashboard") ? "#4B0082" : "#6b7280"} />
+              <span className="text-nowrap">الصفحة الرئيسية</span>
+            </Link>
+
+            <Link
+              to="/teacher/questions"
+              className="nav-link fw-bold d-flex align-items-center gap-2 justify-content-center"
+              style={{
+                color: isActiveTeacher("/teacher/questions") ? "#4B0082" : "#6b7280",
+              }}
+            >
+              <FaQuestionCircle size={18} color={isActiveTeacher("/teacher/questions") ? "#4B0082" : "#6b7280"} />
+              <span className="text-nowrap">أسئلتي</span>
+            </Link>
+
+            <Link
+              to="/teacher/questions/add"
+              className="nav-link fw-bold d-flex align-items-center gap-2 justify-content-center"
+              style={{
+                color: isActiveTeacher("/teacher/questions/add") ? "#4B0082" : "#6b7280",
+              }}
+            >
+              <FaPlusCircle size={18} color={isActiveTeacher("/teacher/questions/add") ? "#4B0082" : "#6b7280"} />
+              <span className="text-nowrap">إضافة سؤال</span>
+            </Link>
+
+            <Link
+              to="/teacher/feedback"
+              className="nav-link fw-bold d-flex align-items-center gap-2 justify-content-center"
+              style={{
+                color: isActiveTeacher("/teacher/feedback") ? "#4B0082" : "#6b7280",
+              }}
+            >
+              <MdFeedback size={18} color={isActiveTeacher("/teacher/feedback") ? "#4B0082" : "#6b7280"} />
+              <span className="text-nowrap">التغذية الراجعة</span>
+            </Link>
+          </div>
+        </div>
+      </nav>
+    );
+  }
+
+  // ====== Header for USER/GUEST ======
+  return (
+    <nav
+      className="navbar navbar-expand-lg px-4 py-2 shadow-sm fixed-top"
+      dir="rtl"
+      style={{
+        backgroundColor: "#fffefeff",
+        borderBottom: "1px solid #dee2e6",
+      }}
     >
-      <span className="navbar-toggler-icon"></span>
-    </button>
+      {/* RIGHT SIDE - LOGO */}
+      <Link className="navbar-brand fw-bold text-dark" to="/">
+        SWE363
+      </Link>
 
-    {/* COLLAPSIBLE LINKS */}
-    <div className="collapse navbar-collapse justify-content-center order-lg-1" id="mainNavbar">
-      {isLoggedIn && user.role === "user" && (
-        <div className="navbar-nav text-center gap-3">
+      {/* CENTER LEFT – AVATAR (ALWAYS VISIBLE) */}
+      <div className="d-flex align-items-center gap-3 order-lg-3">
 
-          <Link to="/dashboard" className="nav-link fw-bold d-flex align-items-center gap-2">
-            <FaHome size={18} color="#4B0082" />
-            الصفحة الرئيسية
-          </Link>
+        {!isLoggedIn && (
+          <>
+            <Link className="btn btn-outline-dark" to="/login">
+              تسجيل دخول
+            </Link>
 
-          <Link to="/training" className="nav-link fw-bold d-flex align-items-center gap-2">
-            <MdMenuBook size={18} color="#4B0082" />
-            التدرييبات
-          </Link>
+            <Link
+              className="btn text-white"
+              style={{
+                backgroundColor: "#4B0082",
+                borderRadius: "8px",
+                fontWeight: 500,
+                padding: "6px 14px",
+              }}
+              to="/register"
+            >
+              تسجيل حساب
+            </Link>
+          </>
+        )}
 
-          <Link to="/exams" className="nav-link fw-bold d-flex align-items-center gap-2">
-            <MdQuiz size={18} color="#4B0082" />
-            الاختبارات
-          </Link>
+        {isLoggedIn && user.role === "user" && (
+          <div className="dropdown">
+            <img
+              src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
+              width="32"
+              height="32"
+              className="rounded-circle dropdown-toggle"
+              role="button"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+              alt="avatar"
+              style={{ cursor: "pointer" }}
+            />
+            <ul className="dropdown-menu dropdown-menu-start">
+              <li className="px-3 py-2 border-bottom">
+                <div className="fw-bold">{user.name || "المستخدم"}</div>
+                <small className="text-muted">{user.email}</small>
+              </li>
 
-          <Link to="/stats" className="nav-link fw-bold d-flex align-items-center gap-2">
-            <BsGraphUp size={18} color="#4B0082" />
-            الأداء
-          </Link>
+              <li>
+                <Link className="dropdown-item" to="/profile">
+                  الملف الشخصي
+                </Link>
+              </li>
 
-        </div>
-      )}
-    </div>
-  </nav>
-);
+              <li><hr className="dropdown-divider" /></li>
 
+              <li>
+                <button className="dropdown-item text-danger" onClick={logout}>
+                  تسجيل الخروج
+                </button>
+              </li>
+            </ul>
+          </div>
+        )}
+      </div>
 
+      {/* MOBILE TOGGLER – ONLY CONTROLS NAV LINKS */}
+      <button
+        className="navbar-toggler order-lg-2 "
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#mainNavbar"
+        aria-controls="mainNavbar"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span className="navbar-toggler-icon"></span>
+      </button>
+
+      {/* COLLAPSIBLE LINKS */}
+      <div className="collapse navbar-collapse justify-content-center order-lg-1" id="mainNavbar">
+        {isLoggedIn && user.role === "user" && (
+          <div className="navbar-nav text-center gap-3">
+
+            <Link to="/dashboard" className="nav-link fw-bold d-flex align-items-center gap-2">
+              <FaHome size={18} color="#4B0082" />
+              الصفحة الرئيسية
+            </Link>
+
+            <Link to="/training" className="nav-link fw-bold d-flex align-items-center gap-2">
+              <MdMenuBook size={18} color="#4B0082" />
+              التدرييبات
+            </Link>
+
+            <Link to="/exams" className="nav-link fw-bold d-flex align-items-center gap-2">
+              <MdQuiz size={18} color="#4B0082" />
+              الاختبارات
+            </Link>
+
+            <Link to="/stats" className="nav-link fw-bold d-flex align-items-center gap-2">
+              <BsGraphUp size={18} color="#4B0082" />
+              الأداء
+            </Link>
+
+          </div>
+        )}
+      </div>
+    </nav>
+  );
 }

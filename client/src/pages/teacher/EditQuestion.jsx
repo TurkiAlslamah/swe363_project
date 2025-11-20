@@ -23,13 +23,16 @@ export default function EditQuestion() {
     if (!question) return;
     
     try {
-      // Ensure questionOrder is a number
+      // Validate question number is a valid positive integer
       const questionOrder = parseInt(formData.questionOrder);
-      const updatedData = {
-        ...formData,
-        questionOrder: (questionOrder && questionOrder > 0) ? questionOrder : question.questionOrder
-      };
-      updateQuestion(parseInt(id), updatedData);
+      if (isNaN(questionOrder) || questionOrder < 1) {
+        alert('يجب أن يكون رقم السؤال رقماً صحيحاً أكبر من الصفر');
+        return;
+      }
+
+      // Update question - automatic reordering will happen in mockQuestions.js
+      // No duplicate check needed - reordering handles everything
+      updateQuestion(parseInt(id), formData);
       setSuccessMessage('تم تحديث السؤال بنجاح! سيتم مراجعته من قبل المشرف.');
       setTimeout(() => {
         navigate('/teacher/questions');
@@ -48,7 +51,8 @@ export default function EditQuestion() {
       <div style={{ 
         minHeight: "100vh",
         background: "linear-gradient(180deg, #f4e6ff 0%, #ffffff 100%)",
-        direction: "rtl"
+        direction: "rtl",
+        paddingTop: "80px"
       }}>
         <div className="container py-4">
           <div className="text-center">جاري التحميل...</div>
@@ -61,11 +65,11 @@ export default function EditQuestion() {
     <div style={{ 
       minHeight: "100vh",
       background: "linear-gradient(180deg, #f4e6ff 0%, #ffffff 100%)",
-      direction: "rtl"
+      direction: "rtl",
+      paddingTop: "80px"
     }}>
-      
-      <div className="container py-4">
-        <h2 className="mb-4 fw-bold" style={{ color: "#6B46C1" }}>
+      <div className="container py-4 px-2 px-md-4">
+        <h2 className="mb-4 fw-bold" style={{ color: "#6B46C1", fontSize: "clamp(1.25rem, 4vw, 1.75rem)" }}>
           تعديل السؤال
         </h2>
 
@@ -76,7 +80,7 @@ export default function EditQuestion() {
         )}
 
         <div className="card shadow-sm border-0">
-          <div className="card-body p-4">
+          <div className="card-body p-3 p-md-4">
             <QuestionForm
               initialData={question}
               onSubmit={handleSubmit}
