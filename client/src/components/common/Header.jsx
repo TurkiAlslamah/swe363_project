@@ -359,34 +359,64 @@ export default function Header() {
         <span className="navbar-toggler-icon"></span>
       </button>
 
-      {/* COLLAPSIBLE LINKS */}
-      <div className="collapse navbar-collapse justify-content-center order-lg-1" id="mainNavbar">
-        {isLoggedIn && user.role === "user" && (
-          <div className="navbar-nav text-center gap-3">
+        {/* COLLAPSIBLE LINKS */}
+        <div className="collapse navbar-collapse justify-content-center order-lg-1" id="mainNavbar">
+          {isLoggedIn && user.role === "user" && (
+            <div className="navbar-nav text-center gap-3">
 
-            <Link to="/dashboard" className="nav-link fw-bold d-flex align-items-center gap-2">
-              <FaHome size={18} color="#4B0082" />
-              الصفحة الرئيسية
-            </Link>
+              <Link 
+                to="/dashboard" 
+                className="nav-link fw-bold d-flex align-items-center gap-2 px-3 py-2 rounded-pill"
+                style={{
+                  backgroundColor: location.pathname === "/dashboard" ? "#4B0082" : "transparent",
+                  color: location.pathname === "/dashboard" ? "#ffffff" : "#6b7280",
+                }}
+              >
+                <FaHome size={18} />
+                الصفحة الرئيسية
+              </Link>
 
-            <Link to="/training" className="nav-link fw-bold d-flex align-items-center gap-2">
-              <MdMenuBook size={18} color="#4B0082" />
-              التدرييبات
-            </Link>
+              <Link 
+                to="/training" 
+                className="nav-link fw-bold d-flex align-items-center gap-2 px-3 py-2 rounded-pill"
+                style={{
+                  backgroundColor: location.pathname.startsWith("/training") ? "#4B0082" : "transparent",
+                  color: location.pathname.startsWith("/training") ? "#ffffff" : "#6b7280",
+                }}
+              >
+                <MdMenuBook size={18} />
+                التدرييبات
+              </Link>
 
-            <Link to="/exams" className="nav-link fw-bold d-flex align-items-center gap-2">
-              <MdQuiz size={18} color="#4B0082" />
-              الاختبارات
-            </Link>
+              <Link 
+                to="/exams" 
+                className="nav-link fw-bold d-flex align-items-center gap-2 px-3 py-2 rounded-pill"
+                style={{
+                  backgroundColor: location.pathname.startsWith("/exams") ? "#4B0082" : "transparent",
+                  color: location.pathname.startsWith("/exams") ? "#ffffff" : "#6b7280",
+                }}
+              >
+                <MdQuiz size={18} />
+                الاختبارات
+              </Link>
 
-            <Link to="/stats" className="nav-link fw-bold d-flex align-items-center gap-2">
-              <BsGraphUp size={18} color="#4B0082" />
-              الأداء
-            </Link>
+              <Link 
+                to="/stats" 
+                className="nav-link fw-bold d-flex align-items-center gap-2 px-3 py-2 rounded-pill"
+                style={{
+                  backgroundColor: location.pathname.startsWith("/stats") || 
+                                  location.pathname.startsWith("/review-") ? "#4B0082" : "transparent",
+                  color: location.pathname.startsWith("/stats") || 
+                        location.pathname.startsWith("/review-") ? "#ffffff" : "#6b7280",
+                }}
+              >
+                <BsGraphUp size={18} />
+                الأداء
+              </Link>
 
-          </div>
-        )}
-      </div>
+            </div>
+          )}
+        </div>
     </nav>
   );
 }

@@ -1,4 +1,4 @@
-import React from "react";
+import { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
@@ -6,22 +6,47 @@ export default function Register() {
   const { login } = useAuth(); // simulate registering and logging in
   const navigate = useNavigate();
 
-  const handleRegister = (e) => {
-    e.preventDefault();
+  const handleRegister = async (e) => {
+  e.preventDefault();
+  setError(null);
+  setLoading(true);
+
+  try {
     const fullName = e.target.fullName.value;
     const email = e.target.email.value;
     const password = e.target.password.value;
     const confirmPassword = e.target.confirmPassword.value;
 
-    if (password !== confirmPassword) {
-      alert("كلمتا السر غير متطابقتين");
-      return;
+    // Validation
+    if (!fullName.trim() || fullName.trim().length < 3) {
+      throw new Error('الاسم يجب أن يكون 3 أحرف على الأقل');
     }
 
-    // Simulate register -> login -> navigate
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      throw new Error('البريد الإلكتروني غير صالح');
+    }
+
+    if (password.length < 6) {
+      throw new Error('كلمة المرور يجب أن تكون 6 أحرف على الأقل');
+    }
+
+    if (password !== confirmPassword) {
+      throw new Error('كلمتا المرور غير متطابقتين');
+    }
+
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
     login(email, "user");
     navigate("/dashboard");
-  };
+
+  } catch (err) {
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div
@@ -44,6 +69,11 @@ export default function Register() {
           انضم إلى منصتنا
         </h2>
         <p className="text-center text-muted mb-4">ابدأ رحلتك الآن</p>
+        {error && (
+          <div className="alert alert-danger" role="alert">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleRegister}>
           <div className="mb-3">
@@ -91,15 +121,20 @@ export default function Register() {
           </div>
 
           <button
-            type="submit"
-            className="btn w-100 text-white fw-bold"
-            style={{
-              backgroundColor: "#4B0082",
-              border: "none",
-            }}
-          >
-            ابدأ رحلتك الآن
-          </button>
+          type="submit"
+          className="btn w-100 text-white fw-bold"
+          style={{ backgroundColor: "#4B0082", border: "none" }}
+          disabled={loading}
+        >
+          {loading ? (
+            <>
+              <span className="spinner-border spinner-border-sm me-2"></span>
+              جاري التسجيل...
+            </>
+          ) : (
+            'ابدأ رحلتك الآن'
+          )}
+        </button>
         </form>
       </div>
     </div>

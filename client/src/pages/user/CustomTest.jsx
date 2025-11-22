@@ -64,13 +64,29 @@ const CustomTest = () => {
   ];
 
   const handleTopicChange = (topic, value) => {
+  try {
     const numValue = parseInt(value) || 0;
+    
+    // Validate number
+    if (numValue < 0) {
+      alert('العدد يجب أن يكون أكبر من أو يساوي صفر');
+      return;
+    }
+    
+    if (numValue > 50) {
+      alert('العدد الأقصى لكل موضوع هو 50');
+      return;
+    }
+    
     if (activeTab === "verbal") {
       setVerbalTopics(prev => ({ ...prev, [topic]: numValue }));
     } else {
       setQuantTopics(prev => ({ ...prev, [topic]: numValue }));
     }
-  };
+  } catch (err) {
+    alert('حدث خطأ أثناء تحديث عدد الأسئلة');
+  }
+};
 
   const getTotalQuestions = () => {
     const topics = activeTab === "verbal" ? verbalTopics : quantTopics;
@@ -87,22 +103,31 @@ const CustomTest = () => {
 };
 
   const handleStartTest = () => {
-  const totalQuestions = getTotalQuestions();
-  if (totalQuestions === 0) {
-    alert("يرجى اختيار عدد الأسئلة من الموضوعات أدناه");
-    return;
-  }
-  
-  // Navigate to test questions
-  navigate('/exams/custom/start', {
-    state: {
-      settings,
-      verbalTopics,
-      quantTopics,
-      activeTab,
-      totalQuestions
+  try {
+    const totalQuestions = getTotalQuestions();
+    if (totalQuestions === 0) {
+      alert("يرجى اختيار عدد الأسئلة من الموضوعات أدناه");
+      return;
     }
-  });
+
+    if (totalQuestions > 100) {
+      alert("العدد الأقصى للأسئلة هو 100");
+      return;
+    }
+    
+    // Navigate to test questions
+    navigate('/exams/custom/start', {
+      state: {
+        settings,
+        verbalTopics,
+        quantTopics,
+        activeTab,
+        totalQuestions
+      }
+    });
+  } catch (err) {
+    alert('حدث خطأ أثناء إنشاء الاختبار. يرجى المحاولة مرة أخرى.');
+  }
 };
 
   const currentTopics = activeTab === "verbal" ? verbalTopicsData : quantTopicsData;

@@ -7,6 +7,7 @@ export default function Profile() {
     name: "تركي السلامه",
     email: "turki@example.com",
   });
+  
 
   // Edit modes
   const [editMode, setEditMode] = useState({

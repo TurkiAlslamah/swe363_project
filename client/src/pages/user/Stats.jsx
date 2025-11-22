@@ -13,6 +13,7 @@ import {
 } from 'react-icons/fa';
 
 export default function Stats() {
+  
   const [stats, setStats] = useState({
     // Training Stats
     totalTrainingQuestions: 150,
@@ -44,8 +45,37 @@ export default function Stats() {
     
     // This Week
     thisWeekQuestions: 45,
-    thisWeekAccuracy: 82
+    thisWeekAccuracy: 82,
+
+    totalSavedQuestions: 25, // Number of saved questions
   });
+  // Categories data - simple with just numbers
+const categoriesKami = [
+  { id: 1, name: "جبر", totalQuestions: 450, correctAnswers: 396, accuracy: 88 },
+  { id: 2, name: "هندسة", totalQuestions: 320, correctAnswers: 262, accuracy: 82 },
+  { id: 3, name: "إحصاء", totalQuestions: 250, correctAnswers: 188, accuracy: 75 },
+  { id: 4, name: "حساب", totalQuestions: 150, correctAnswers: 105, accuracy: 70 },
+  { id: 5, name: "مقارنات كمية", totalQuestions: 150, correctAnswers: 98, accuracy: 65 }
+];
+
+const categoriesLafzi = [
+  { id: 6, name: "استيعاب المقروء", totalQuestions: 528, correctAnswers: 462, accuracy: 88 },
+  { id: 7, name: "التناظر اللفظي", totalQuestions: 777, correctAnswers: 621, accuracy: 80 },
+  { id: 8, name: "إكمال الجمل", totalQuestions: 589, correctAnswers: 501, accuracy: 85 },
+  { id: 9, name: "الخطأ السياقي", totalQuestions: 736, correctAnswers: 588, accuracy: 80 },
+  { id: 10, name: "المفردة الشاذة", totalQuestions: 516, correctAnswers: 464, accuracy: 90 }
+];
+
+// Add state for selected tab
+const [selectedTab, setSelectedTab] = useState('kami'); // 'kami' or 'lafzi'
+
+// Get current categories based on selected tab
+const currentCategories = selectedTab === 'kami' ? categoriesKami : categoriesLafzi;
+
+// Single color scheme - purple theme
+const categoryColor = "#8B5CF6";
+const categoryBgColor = "#EDE9FE";
+  
 
   useEffect(() => {
     // TODO: Fetch stats from API
@@ -166,6 +196,91 @@ export default function Stats() {
             </div>
           </div>
         </div>
+        {/* Categories Performance Section */}
+<div className="mb-5">
+  <h3 className="fw-bold mb-4">
+    <FaBook className="me-2" /> 
+    الأداء حسب الأقسام
+  </h3>
+
+  {/* Tab Buttons */}
+  <div className="text-center mb-4">
+    <div className="btn-group" role="group">
+      <button
+        type="button"
+        className={`btn btn-lg px-5 ${selectedTab === 'kami' ? 'btn-primary' : 'btn-outline-secondary'}`}
+        onClick={() => setSelectedTab('kami')}
+        style={{ 
+          borderRadius: '12px 0 0 12px',
+          fontWeight: 'bold'
+        }}
+      >
+        القسم الكمي
+      </button>
+      <button
+        type="button"
+        className={`btn btn-lg px-5 ${selectedTab === 'lafzi' ? 'btn-primary' : 'btn-outline-secondary'}`}
+        onClick={() => setSelectedTab('lafzi')}
+        style={{ 
+          borderRadius: '0 12px 12px 0',
+          fontWeight: 'bold'
+        }}
+      >
+        القسم اللفظي
+      </button>
+    </div>
+  </div>
+  
+  <div className="row">
+    {currentCategories.map((category) => (
+      <div key={category.id} className="col-md-6 col-lg-4 mb-4">
+        <div 
+          className="card border-0 shadow-sm h-100"
+          style={{ borderRadius: '15px', transition: 'transform 0.3s' }}
+          onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
+          onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+        >
+          <div className="card-body p-4">
+            {/* Header */}
+            <div className="d-flex align-items-center gap-3 mb-3">
+              <div 
+                className="rounded-3 d-flex align-items-center justify-content-center"
+                style={{ 
+                  width: '50px', 
+                  height: '50px', 
+                  backgroundColor: categoryBgColor,
+                  color: categoryColor
+                }}
+              >
+                <FaBook size={24} />
+              </div>
+              <div>
+                <h5 className="fw-bold mb-0">{category.name}</h5>
+                <small className="text-muted">{category.totalQuestions} سؤال</small>
+              </div>
+            </div>
+
+            {/* Stats */}
+            <div className="d-flex justify-content-between text-center pt-3 border-top">
+              <div>
+                <div className="fw-bold" style={{ color: categoryColor, fontSize: '1.5rem' }}>
+                  {category.correctAnswers}
+                </div>
+                <small className="text-muted">صحيحة</small>
+              </div>
+              <div>
+                <div className="fw-bold" style={{ color: categoryColor, fontSize: '1.5rem' }}>
+                  {category.accuracy}%
+                </div>
+                <small className="text-muted">نسبة الأداء</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+</div>
 
       
 
@@ -249,6 +364,24 @@ export default function Stats() {
             </Link>
           </div>
         </div>
+           {/* Review Saved Questions Button */}
+          <div className="card border-0 shadow-lg mt-4" style={{ borderRadius: '20px' }}>
+            <div className="card-body p-4 text-center">
+              <FaBook size={50} className="text-primary mb-3" />
+              <h4 className="fw-bold mb-2">مراجعة الأسئلة المحفوظة</h4>
+              <p className="text-muted mb-4">
+                لديك {stats.totalSavedQuestions} سؤال محفوظ للمراجعة
+              </p>
+              <Link
+                to="/review-saved-questions"
+                className="btn btn-primary btn-lg px-5"
+                style={{ borderRadius: '12px', fontWeight: 'bold' }}
+              >
+                <FaBook className="me-2" />
+                ابدأ المراجعة
+              </Link>
+            </div>
+          </div>
 
       </div>
     </div>
