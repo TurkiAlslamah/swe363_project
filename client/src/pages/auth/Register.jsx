@@ -5,6 +5,8 @@ import { useAuth } from "../../context/AuthContext";
 export default function Register() {
   const { login } = useAuth(); // simulate registering and logging in
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleRegister = async (e) => {
   e.preventDefault();
