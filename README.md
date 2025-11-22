@@ -245,6 +245,10 @@ You can still see his commits inside **Pulse**, so the work is there it’s just
 - **Package Manager:** npm
 - **UI Styling:** Bootstrap (React-Bootstrap + custom CSS)
 
+  ---
+  ## Figma link
+  https://www.figma.com/design/B4e88NbKRB6m8ns4S0NNnT/Positivus-Landing-Page-Design--Community-?node-id=403-333&t=HhOYZKtRMROeTY61-1
+
 
 ---
 
