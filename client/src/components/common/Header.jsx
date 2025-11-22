@@ -7,6 +7,7 @@ import { BsGraphUp } from "react-icons/bs";
 import { FaUsers } from "react-icons/fa";
 import { FaQuestionCircle, FaPlusCircle } from "react-icons/fa";
 import { MdFeedback } from "react-icons/md";
+import { MdReportProblem } from "react-icons/md";
 
 export default function Header() {
   const { user, logout } = useAuth();
@@ -80,6 +81,21 @@ export default function Header() {
             <MdQuiz size={20} className="ms-1" />
             مراجعة الأسئلة
           </Link>
+           <Link
+              to="/admin/reports"
+              className="d-flex align-items-center px-3 py-2 rounded-pill text-decoration-none"
+              style={{
+                backgroundColor: isActiveAdmin("/admin/reports")
+                  ? "#4B0082"
+                  : "transparent",
+                color: isActiveAdmin("/admin/reports") ? "#ffffff" : "#6b7280",
+                fontWeight: 500,
+              }}
+            >
+              <MdReportProblem className="ms-1" />
+              <span>بلاغات الأسئلة</span>
+            </Link>
+
         </div>
 
 

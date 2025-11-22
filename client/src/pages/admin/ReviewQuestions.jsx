@@ -3,12 +3,12 @@ import { useNavigate } from "react-router-dom";
 
 const INITIAL_QUESTIONS = [
   {
-    id: 111,
+    id: 1,
     text: "أكمل النمط التالي: 113 ، 334 ، 551 ، ...",
     status: "active",      // active | pending | rejected
   },
   {
-    id: 112,
+    id: 2,
     text: "ما هي مساحة المملكة العربية السعودية؟",
     status: "pending",
   },

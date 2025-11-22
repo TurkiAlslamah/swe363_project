@@ -24,6 +24,8 @@ import ReviewWrongAnswers from "./pages/user/ReviewWrongAnswers";
 import UserManagement from "./pages/admin/UserManagement";
 import ReviewQuestions from "./pages/admin/ReviewQuestions";
 import EditQuestionAdmin from "./pages/admin/EditQuestionAdmin"; 
+import Reports from "./pages/admin/Reports";
+
 // Teacher pages
 import TeacherDashboard from "./pages/teacher/Dashboard";
 import TeacherLogin from "./pages/teacher/Login";
@@ -201,6 +203,15 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/admin/reports"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <Reports />
+              </ProtectedRoute>
+            }
+          />
+
         </Routes>
       </main>
       <Footer />
