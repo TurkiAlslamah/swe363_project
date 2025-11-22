@@ -4,6 +4,8 @@ import { FaClock, FaCalendarDay } from 'react-icons/fa';
 
 export default function DailyTest() {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Daily question - changes every day
   const [question] = useState({
@@ -51,6 +53,7 @@ export default function DailyTest() {
   };
 
   const handleFinishTest = () => {
+  try {
     const score = selectedAnswer === question.correct_answer ? 1 : 0;
     const timeTaken = 60 - timeLeft;
 
@@ -64,13 +67,44 @@ export default function DailyTest() {
       },
       replace: true
     });
-  };
+  } catch (err) {
+    alert('حدث خطأ أثناء إنهاء الاختبار. يرجى المحاولة مرة أخرى.');
+  }
+};
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
+        if (loading) {
+        return (
+            <div className="min-vh-100 d-flex align-items-center justify-content-center" dir="rtl">
+            <div className="text-center">
+                <div className="spinner-border text-primary mb-3" role="status">
+                <span className="visually-hidden">جاري التحميل...</span>
+                </div>
+                <p className="text-muted">جاري تحميل السؤال اليومي...</p>
+            </div>
+            </div>
+        );
+        }
+
+        if (error) {
+        return (
+            <div className="min-vh-100 d-flex align-items-center justify-content-center" dir="rtl">
+            <div className="text-center">
+                <div className="alert alert-danger" role="alert">
+                <h4>حدث خطأ</h4>
+                <p>{error}</p>
+                </div>
+                <button onClick={() => navigate('/exams')} className="btn btn-primary mt-3">
+                العودة للاختبارات
+                </button>
+            </div>
+            </div>
+        );
+        }
 
   return (
     <div className="min-vh-100" dir="rtl" style={{ backgroundColor: "#E8E5F5", paddingTop: "100px", paddingBottom: "50px" }}>

@@ -18,6 +18,7 @@ import DailyTest from "./pages/user/DailyTest";
 
 import Stats from "./pages/user/Stats";
 import ReviewWrongAnswers from "./pages/user/ReviewWrongAnswers";
+import ReviewSavedQuestions from "./pages/user/ReviewSavedQuestions";
 
 // Admin pages
 
@@ -122,6 +123,7 @@ function AppContent() {
             }
           />
          <Route  path="/stats"  element={     <ProtectedRoute allowedRoles={["user"]}>      <Stats />    </ProtectedRoute>  }/> <Route  path="/review-wrong-answers"  element={     <ProtectedRoute allowedRoles={["user"]}>      <ReviewWrongAnswers />    </ProtectedRoute>  }/>
+          <Route  path="/review-saved-questions"  element={     <ProtectedRoute allowedRoles={["user"]}>      <ReviewSavedQuestions />    </ProtectedRoute>  }/>
  
 
           {/* Teacher Routes */}

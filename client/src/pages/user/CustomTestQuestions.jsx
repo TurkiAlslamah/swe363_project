@@ -6,9 +6,12 @@ export default function CustomTestQuestions() {
   const navigate = useNavigate();
   const location = useLocation();
   const testSettings = location.state || {};
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Generate questions based on selected topics
   const generateQuestions = () => {
+    try {
     const allQuestions = [
       {
         id: 1,
@@ -54,6 +57,10 @@ export default function CustomTestQuestions() {
     // Get number of questions from settings
     const algebraCount = testSettings.quantTopics?.algebra || 0;
     return allQuestions.slice(0, algebraCount);
+    } catch (err) {
+      setError('حدث خطأ أثناء تحميل الأسئلة. يرجى المحاولة مرة أخرى.');
+      return [];
+    }
   };
 
   const [questions] = useState(generateQuestions());
@@ -112,6 +119,7 @@ export default function CustomTestQuestions() {
   };
 
   const handleFinishTest = () => {
+  try {
     let score = 0;
     questions.forEach((q, index) => {
       if (selectedAnswers[index] === q.correct_answer) {
@@ -133,7 +141,10 @@ export default function CustomTestQuestions() {
       },
       replace: true
     });
-  };
+  } catch (err) {
+    alert('حدث خطأ أثناء إنهاء الاختبار. يرجى المحاولة مرة أخرى.');
+  }
+};
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
@@ -168,6 +179,34 @@ export default function CustomTestQuestions() {
       </div>
     );
   }
+    if (loading) {
+    return (
+        <div className="min-vh-100 d-flex align-items-center justify-content-center" dir="rtl">
+        <div className="text-center">
+            <div className="spinner-border text-primary mb-3" role="status">
+            <span className="visually-hidden">جاري التحميل...</span>
+            </div>
+            <p className="text-muted">جاري تحميل الأسئلة...</p>
+        </div>
+        </div>
+    );
+    }
+
+    if (error) {
+    return (
+        <div className="min-vh-100 d-flex align-items-center justify-content-center" dir="rtl">
+        <div className="text-center">
+            <div className="alert alert-danger" role="alert">
+            <h4>حدث خطأ</h4>
+            <p>{error}</p>
+            </div>
+            <button onClick={() => navigate('/exams/custom')} className="btn btn-primary mt-3">
+            العودة للاختبارات
+            </button>
+        </div>
+        </div>
+    );
+    }
 
   return (
     <div className="min-vh-100" dir="rtl" style={{ backgroundColor: "#E8E5F5", paddingTop: "100px", paddingBottom: "50px" }}>

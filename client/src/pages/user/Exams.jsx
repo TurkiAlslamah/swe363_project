@@ -10,6 +10,7 @@ import {
   FaBolt
 } from "react-icons/fa";
 
+
 const Exams = () => {
   const navigate = useNavigate();
   const [stats, setStats] = useState({
@@ -18,9 +19,11 @@ const Exams = () => {
     averageScore: 0,
     totalTests: 0,
   });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // TODO: Fetch user stats from API
+    
     setStats({
       thisWeek: 3,
       bestResult: 100,
@@ -37,6 +40,37 @@ const Exams = () => {
   const handleDailyTest = () => {
   navigate("/daily-test");
 };
+if (loading) {
+  return (
+    <div style={{ direction: "rtl", minHeight: "100vh", background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)", padding: "2rem" }}>
+      <div className="container d-flex align-items-center justify-content-center" style={{ minHeight: "50vh" }}>
+        <div className="text-center">
+          <div className="spinner-border text-primary mb-3" role="status">
+            <span className="visually-hidden">جاري التحميل...</span>
+          </div>
+          <p className="text-muted">جاري تحميل الإحصائيات...</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+if (error) {
+  return (
+    <div style={{ direction: "rtl", minHeight: "100vh", background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)", padding: "2rem" }}>
+      <div className="container">
+        <div className="alert alert-warning" role="alert">
+          <h4>تعذر تحميل الإحصائيات</h4>
+          <p>{error}</p>
+          <button className="btn btn-primary mt-2" onClick={() => window.location.reload()}>
+            إعادة المحاولة
+          </button>
+        </div>
+        {/* Show page with default stats */}
+      </div>
+    </div>
+  );
+}
 
   return (
     <div style={{ direction: "rtl", minHeight: "100vh", background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)", padding: "2rem" }}>
