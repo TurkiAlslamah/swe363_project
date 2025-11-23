@@ -47,6 +47,15 @@ export default function DailyTest() {
 
     return () => clearInterval(timer);
   }, [timeLeft, testStarted]);
+  useEffect(() => {
+  try {
+   
+    setLoading(false); 
+  } catch (err) {
+    setError("حدث خطأ أثناء تحميل السؤال");
+    setLoading(false);
+  }
+}, [])
 
   const handleAnswerSelect = (optionId) => {
     setSelectedAnswer(optionId);
