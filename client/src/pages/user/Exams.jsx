@@ -23,15 +23,21 @@ const Exams = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    
+  try {
+    // Fake stats
     setStats({
       thisWeek: 3,
       bestResult: 100,
       averageScore: 37,
       totalTests: 5,
     });
-  }, []);
-  
+
+    setLoading(false); 
+  } catch (err) {
+    setError("حدث خطأ أثناء تحميل البيانات");
+    setLoading(false);
+  }
+}, []);
 
   const handleCustomTest = () => {
     navigate("/exams/custom");
