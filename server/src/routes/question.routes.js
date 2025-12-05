@@ -21,10 +21,17 @@ import {
     updateQuestion,
     deleteQuestion,
     getRandomQuestions
+    , bulkCreateQuestions,
+    deleteAllQuestions
 } from "../controllers/question.controller.js";
 import { protect } from "../middlewares/auth.middleware.js";
+import { getDashboard } from "../controllers/question.controller.js";
+
 
 const router = express.Router();
+
+// ============ DASHBOARD ============
+router.get("/dashboard", protect, getDashboard);
 
 // ============ QUESTION TYPES ============
 router.get("/types", getAllQuestionTypes);
@@ -45,9 +52,13 @@ router.delete("/passages/:id", protect, deletePassage);
 // ============ QUESTIONS ============
 router.get("/", getAllQuestions);
 router.get("/random", getRandomQuestions);
-router.get("/:id", getQuestionById);
+router.post("/bulk-insert", bulkCreateQuestions);
+router.delete("/all", deleteAllQuestions);
 router.get("/passage/:passageId", getQuestionsByPassageId);
 router.post("/", protect, createQuestion);
+
+// ============ DYNAMIC :id ROUTES - MUST BE LAST! ============
+router.get("/:id", getQuestionById);
 router.put("/:id", protect, updateQuestion);
 router.delete("/:id", protect, deleteQuestion);
 

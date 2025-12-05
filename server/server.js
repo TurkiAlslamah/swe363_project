@@ -5,11 +5,11 @@ import { connectDB } from "./src/config/db.config.js";
 import errorHandler from "./src/middlewares/error.middleware.js";
 import questionRoutes from "./src/routes/question.routes.js";
 import trainingRoutes from "./src/routes/training.routes.js";
-
-// Import routes
+import savedRoutes from "./src/routes/saved.routes.js";
+import examRoutes from "./src/routes/exam.routes.js";
+import adminRoutes from "./src/routes/admin.routes.js";
 import authRoutes from "./src/routes/auth.routes.js";
 
-// Load env variables
 dotenv.config();
 
 const app = express();
@@ -18,18 +18,21 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Routes
-app.use("/api/auth", authRoutes);
-
 // Health check
 app.get("/", (req, res) => {
     res.json({ message: "Qdrat API is running 🚀" });
 });
-app.use("/api/questions", questionRoutes);
-// Error handler (must be last)
-app.use(errorHandler);
-app.use("/api/training", trainingRoutes);
 
+// Routes
+app.use("/api/auth", authRoutes);
+app.use("/api/questions", questionRoutes);
+app.use("/api/training", trainingRoutes);
+app.use("/api/saved", savedRoutes);
+app.use("/api/exams", examRoutes);
+app.use("/api/admin", adminRoutes);
+
+// Error handler 
+app.use(errorHandler);
 
 // Start server
 const PORT = process.env.PORT || 5000;

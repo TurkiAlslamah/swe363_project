@@ -26,7 +26,7 @@ export const register = asyncHandler(async (req, res) => {
         fullName,
         password,
         type: "student"  // Frontend register always creates students
-    });
+    });h
 
     res.status(201).json(
         new ApiResponse(201, result, "تم إنشاء الحساب بنجاح")
@@ -49,6 +49,10 @@ export const login = asyncHandler(async (req, res) => {
     res.status(200).json(
         new ApiResponse(200, result, "تم تسجيل الدخول بنجاح")
     );
+});
+export const updateQuestion = asyncHandler(async (req, res) => {
+    const question = await AdminService.updateQuestion(req.params.id, req.body);
+    res.status(200).json(new ApiResponse(200, question, "تم تحديث السؤال"));
 });
 
 // Get current user profile

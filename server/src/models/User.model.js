@@ -23,6 +23,11 @@ const userSchema = new mongoose.Schema(
             enum: ["student", "teacher", "admin"],
             default: "student",
         },
+          status: {
+      type: String,
+      enum: ["نشط", "غير نشط", "محظور"],
+      default: "نشط"
+        }
     },
     { timestamps: true }
 );
