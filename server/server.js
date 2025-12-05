@@ -4,6 +4,7 @@ import cors from "cors";
 import { connectDB } from "./src/config/db.config.js";
 import errorHandler from "./src/middlewares/error.middleware.js";
 import questionRoutes from "./src/routes/question.routes.js";
+import trainingRoutes from "./src/routes/training.routes.js";
 
 // Import routes
 import authRoutes from "./src/routes/auth.routes.js";
@@ -27,6 +28,8 @@ app.get("/", (req, res) => {
 app.use("/api/questions", questionRoutes);
 // Error handler (must be last)
 app.use(errorHandler);
+app.use("/api/training", trainingRoutes);
+
 
 // Start server
 const PORT = process.env.PORT || 5000;
