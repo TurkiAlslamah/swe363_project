@@ -25,7 +25,7 @@ class AuthService {
         });
 
         // Generate JWT token
-        const token = this.generateToken(user._id);
+        const token = this.generateToken(user._id, user.type);
 
         return {
             user: {
@@ -58,7 +58,7 @@ class AuthService {
         }
 
         // Generate JWT token
-        const token = this.generateToken(user._id);
+        const token = this.generateToken(user._id, user.type);
 
         return {
             user: {
@@ -81,13 +81,13 @@ class AuthService {
     }
 
     // Generate JWT token
-    generateToken(userId) {
-        return jwt.sign(
-            { userId },
-            process.env.JWT_SECRET,
-            { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
-        );
-    }
+    generateToken(userId, type) {
+    return jwt.sign(
+        { userId, type },
+        process.env.JWT_SECRET,
+        { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
+    );
+}
 
     // Verify JWT token
     verifyToken(token) {

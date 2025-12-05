@@ -83,9 +83,18 @@ const questionSchema = new mongoose.Schema(
         visualization_image_url: {
             type: String,
             default: null
+        },
+        // Status
+        status: {
+            type: String,
+            enum: ["قيد المراجعة", "مقبول", "مرفوض"],
+            default: "قيد المراجعة"
         }
     },
-    { timestamps: true }
+    { 
+        timestamps: true,
+        _id: false  // Disable auto ObjectId
+    }
 );
 
 export default mongoose.model("Question", questionSchema);
