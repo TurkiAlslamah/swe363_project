@@ -1,54 +1,141 @@
 // src/pages/admin/UserManagement.jsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import api from "../../api/http"; // axios instance (baseURL + token)
 
-const MOCK_STUDENTS = [
-  { id: 1, name: "تركي السلمان", email: "turki@student.com" },
-  { id: 2, name: "محمد الغبي", email: "mohammed@student.com" },
-];
-
-const MOCK_TEACHERS = [
-  { id: 1, name: "أحمد المعلم", email: "ahmed@teacher.com" },
-  { id: 2, name: "سعيد المدرس", email: "saeed@teacher.com" },
+const STATUS_OPTIONS = [
+  { value: "نشط", label: "نشط" },
+  { value: "غير نشط", label: "غير نشط" },
+  { value: "محظور", label: "محظور" },
 ];
 
 export default function UserManagement() {
-  const [activeTab, setActiveTab] = useState("students"); // students | teachers
+  const [activeTab, setActiveTab] = useState("students"); // "students" | "teachers"
   const [filter, setFilter] = useState("");
-  const [selectedUser, setSelectedUser] = useState(null); // المستخدم المفتوح في الإعدادات
-  const [status, setStatus] = useState("active"); // active | inactive | blocked
+  const [users, setUsers] = useState([]);
 
-  const list = activeTab === "students" ? MOCK_STUDENTS : MOCK_TEACHERS;
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const filtered = list.filter(
-    (u) =>
-      u.name.includes(filter) ||
-      String(u.id).includes(filter)
-  );
+  const [showSettings, setShowSettings] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [settingsStatus, setSettingsStatus] = useState("نشط");
+  const [settingsLoading, setSettingsLoading] = useState(false);
 
-  const handleDelete = (user) => {
-    const role = activeTab === "students" ? "طالب" : "معلم";
-    if (window.confirm(`(تجريبي) هل أنت متأكد من حذف ${role}: ${user.name}؟`)) {
-      alert(`(تجريبي) تم حذف ${role}: ${user.name}`);
-      // لاحقاً: حذف فعلي من الـ state أو من الـ backend
+  // Helper to extract id (backend might send `_id` or `id`)
+  const getUserId = (user) => user._id || user.id;
+
+  // Fetch users whenever tab changes
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const typeParam = activeTab === "students" ? "student" : "teacher";
+
+        const res = await api.get("/admin/users", {
+          params: { type: typeParam },
+        });
+
+        // Try common shapes: {data: {users:[]}} OR {data: []}
+        const list =
+          res.data?.data?.users ||
+          res.data?.users ||
+          res.data?.data ||
+          res.data ||
+          [];
+
+        setUsers(Array.isArray(list) ? list : []);
+      } catch (err) {
+        console.error("Error loading users", err);
+        setError("تعذر تحميل المستخدمين. تأكد من تسجيل الدخول كأدمن.");
+        setUsers([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, [activeTab]);
+
+  // Filtered list
+  const filtered = users.filter((u) => {
+    const idStr = String(getUserId(u) || "");
+    const name = (u.fullName || u.name || "").toLowerCase();
+    const q = filter.toLowerCase();
+    return idStr.includes(filter) || name.includes(q);
+  });
+
+  // Open settings modal
+  const openSettings = (user) => {
+    setSelectedUser(user);
+    setSettingsStatus(user.status || "نشط");
+    setShowSettings(true);
+  };
+
+  const closeSettings = () => {
+    setShowSettings(false);
+    setSelectedUser(null);
+    setSettingsStatus("نشط");
+    setSettingsLoading(false);
+  };
+
+  // Save status change
+  const handleSaveSettings = async () => {
+    if (!selectedUser) return;
+    setSettingsLoading(true);
+    setError("");
+
+    const userId = getUserId(selectedUser);
+
+    try {
+      await api.put(`/admin/users/${userId}`, {
+        status: settingsStatus,
+      });
+
+      // Update UI locally
+      setUsers((prev) =>
+        prev.map((u) =>
+          getUserId(u) === userId ? { ...u, status: settingsStatus } : u
+        )
+      );
+
+      closeSettings();
+    } catch (err) {
+      console.error("Error updating user", err);
+      setError("تعذر تحديث بيانات المستخدم.");
+      setSettingsLoading(false);
     }
   };
 
-  const handleSettings = (user) => {
-    setSelectedUser(user);
-    setStatus("active"); // حالة افتراضية (تجريبية)
-  };
-
-  const handleSaveSettings = () => {
+  // Delete user (inside modal only)
+  const handleDeleteUser = async () => {
     if (!selectedUser) return;
-    alert(
-      `(تجريبي) تم حفظ إعدادات المستخدم: ${selectedUser.name} بالحالة: ${status}`
+
+    const confirmDelete = window.confirm(
+      `هل أنت متأكد من حذف المستخدم: ${
+        selectedUser.fullName || selectedUser.name || ""
+      } ؟`
     );
+    if (!confirmDelete) return;
+
+    setSettingsLoading(true);
+    setError("");
+
+    const userId = getUserId(selectedUser);
+
+    try {
+      await api.delete(`/admin/users/${userId}`);
+
+      setUsers((prev) => prev.filter((u) => getUserId(u) !== userId));
+      closeSettings();
+    } catch (err) {
+      console.error("Error deleting user", err);
+      setError("تعذر حذف المستخدم.");
+      setSettingsLoading(false);
+    }
   };
 
-  const handleCloseSettings = () => {
-    setSelectedUser(null);
-    setStatus("active");
-  };
+  const heading = activeTab === "students" ? "إدارة الطلاب" : "إدارة المعلّمين";
 
   return (
     <div
@@ -60,20 +147,26 @@ export default function UserManagement() {
       }}
     >
       <div className="container text-end">
-        {/* عنوان الصفحة */}
         <h2
           className="fw-bold mb-4"
           style={{ color: "#4B0082", marginTop: "8px" }}
         >
-          إدارة المستخدمين
+          {heading}
         </h2>
 
-        {/* الكرت الأبيض */}
+        {/* Error message */}
+        {error && (
+          <div className="alert alert-danger" role="alert">
+            {error}
+          </div>
+        )}
+
+        {/* Card */}
         <div
           className="shadow-sm bg-white rounded-3 p-4"
           style={{ minHeight: "300px" }}
         >
-          {/* Tabs طلاب / معلمين */}
+          {/* Tabs */}
           <div className="d-inline-flex mb-3">
             <button
               className="btn"
@@ -84,10 +177,7 @@ export default function UserManagement() {
                 color: activeTab === "students" ? "#fff" : "#444",
                 minWidth: "120px",
               }}
-              onClick={() => {
-                setActiveTab("students");
-                setSelectedUser(null);
-              }}
+              onClick={() => setActiveTab("students")}
             >
               الطلاب
             </button>
@@ -100,128 +190,164 @@ export default function UserManagement() {
                 color: activeTab === "teachers" ? "#fff" : "#444",
                 minWidth: "120px",
               }}
-              onClick={() => {
-                setActiveTab("teachers");
-                setSelectedUser(null);
-              }}
+              onClick={() => setActiveTab("teachers")}
             >
               المعلمين
             </button>
           </div>
 
-          {/* حقل الفلتر */}
+          {/* Filter */}
           <div className="mb-4">
             <input
               type="text"
               className="form-control text-end"
-              placeholder="اسم المستخدم أو رقم المستخدم (Filter)"
+              placeholder="اسم المستخدم أو رقم المستخدم"
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
             />
           </div>
 
-          {/* الجدول */}
+          {/* Table */}
           <div className="table-responsive">
             <table className="table align-middle text-end">
               <thead>
                 <tr>
                   <th style={{ width: "10%" }}>رقم المستخدم</th>
-                  <th style={{ width: "50%" }}>اسم المستخدم</th>
-                  <th style={{ width: "40%" }}>الإجراءات</th>
+                  <th style={{ width: "30%" }}>اسم المستخدم</th>
+                  <th style={{ width: "20%" }}>البريد الإلكتروني</th>
+                  <th style={{ width: "15%" }}>الحالة</th>
+                  <th style={{ width: "25%" }}>الإجراءات</th>
                 </tr>
               </thead>
               <tbody>
-                {filtered.length === 0 && (
+                {loading && (
                   <tr>
-                    <td colSpan="3" className="text-center text-muted">
+                    <td colSpan="5" className="text-center text-muted">
+                      جاري تحميل المستخدمين...
+                    </td>
+                  </tr>
+                )}
+
+                {!loading && filtered.length === 0 && (
+                  <tr>
+                    <td colSpan="5" className="text-center text-muted">
                       لا يوجد مستخدمون مطابقون للبحث
                     </td>
                   </tr>
                 )}
 
-                {filtered.map((user) => (
-                  <tr key={user.id}>
-                    <td>#{user.id}</td>
-                    <td>{user.name}</td>
-                    <td>
-                      <button
-                        className="btn btn-success ms-2"
-                        onClick={() => handleSettings(user)}
-                      >
-                        إعدادات
-                      </button>
-                      {/* حذف المستخدم الآن فقط داخل لوحة الإعدادات، مو هنا */}
-                    </td>
-                  </tr>
-                ))}
+                {!loading &&
+                  filtered.map((user) => (
+                    <tr key={getUserId(user)}>
+                      <td>#{getUserId(user)}</td>
+                      <td>{user.fullName || user.name}</td>
+                      <td>{user.email || "-"}</td>
+                      <td>
+                        <span
+                          className="badge"
+                          style={{
+                            backgroundColor:
+                              user.status === "محظور"
+                                ? "#DC2626"
+                                : user.status === "غير نشط"
+                                ? "#F59E0B"
+                                : "#16A34A",
+                            padding: "6px 12px",
+                            fontSize: "13px",
+                          }}
+                        >
+                          {user.status || "نشط"}
+                        </span>
+                      </td>
+                      <td>
+                        <button
+                          className="btn btn-success"
+                          onClick={() => openSettings(user)}
+                        >
+                          إعدادات
+                        </button>
+                        {/* لا يوجد زر حذف هنا – الحذف فقط من نافذة الإعدادات */}
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>
-
-          {/* لوحة إعدادات المستخدم – فيها حذف + تغيير حالة */}
-          {selectedUser && (
-            <div className="mt-4 p-4 border rounded">
-              <div className="d-flex justify-content-between align-items-center mb-3">
-                <h5 className="fw-bold mb-0">إعدادات المستخدم</h5>
-                <button
-                  className="btn btn-sm btn-outline-secondary"
-                  onClick={handleCloseSettings}
-                >
-                  إغلاق
-                </button>
-              </div>
-
-              <div className="mb-3">
-                <label className="form-label">اسم المستخدم</label>
-                <input
-                  type="text"
-                  className="form-control text-end"
-                  value={selectedUser.name}
-                  disabled
-                />
-              </div>
-
-              <div className="mb-3">
-                <label className="form-label">إيميل المستخدم</label>
-                <input
-                  type="text"
-                  className="form-control text-end"
-                  value={selectedUser.email || "غير متوفر"}
-                  disabled
-                />
-              </div>
-
-              <div className="mb-3">
-                <label className="form-label">حالة الحساب</label>
-                <select
-                  className="form-select text-end"
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                >
-                  <option value="active">نشط</option>
-                  <option value="inactive">غير نشط</option>
-                  <option value="blocked">محظور</option>
-                </select>
-              </div>
-
-              <div className="d-flex justify-content-end gap-2">
-                <button
-                  className="btn btn-danger"
-                  onClick={() => handleDelete(selectedUser)}
-                >
-                  حذف المستخدم
-                </button>
-                <button
-                  className="btn btn-primary"
-                  onClick={handleSaveSettings}
-                >
-                  حفظ التغييرات 
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       </div>
+
+      {/* Settings Modal */}
+      {showSettings && selectedUser && (
+        <div
+          className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+          style={{
+            backgroundColor: "rgba(0,0,0,0.3)",
+            zIndex: 1050,
+            direction: "rtl",
+          }}
+        >
+          <div
+            className="bg-white shadow rounded p-4"
+            style={{ width: "90%", maxWidth: "500px" }}
+          >
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <h5 className="mb-0 fw-bold" style={{ color: "#4B0082" }}>
+                إعدادات المستخدم
+              </h5>
+              <button
+                className="btn btn-link text-dark p-0 fs-4"
+                onClick={closeSettings}
+                disabled={settingsLoading}
+              >
+                ✕
+              </button>
+            </div>
+
+            <p className="mb-1">
+              <strong>الاسم:</strong> {selectedUser.fullName || selectedUser.name}
+            </p>
+            <p className="mb-3">
+              <strong>البريد:</strong> {selectedUser.email || "-"}
+            </p>
+
+            <div className="mb-3">
+              <label className="form-label fw-bold" style={{ color: "#4B0082" }}>
+                حالة المستخدم
+              </label>
+              <select
+                className="form-select text-end"
+                value={settingsStatus}
+                onChange={(e) => setSettingsStatus(e.target.value)}
+                disabled={settingsLoading}
+              >
+                {STATUS_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="d-flex justify-content-between mt-4">
+              <button
+                className="btn btn-danger"
+                onClick={handleDeleteUser}
+                disabled={settingsLoading}
+              >
+                حذف المستخدم
+              </button>
+              <button
+                className="btn btn-primary"
+                style={{ backgroundColor: "#4B0082", borderColor: "#4B0082" }}
+                onClick={handleSaveSettings}
+                disabled={settingsLoading}
+              >
+                {settingsLoading ? "جارٍ الحفظ..." : "حفظ التغييرات"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
