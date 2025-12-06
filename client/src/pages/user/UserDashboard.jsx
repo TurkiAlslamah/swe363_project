@@ -1,13 +1,48 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
- import { FaStar, FaBullseye, FaEdit, FaBook } from "react-icons/fa";
+import { FaStar, FaBullseye, FaEdit, FaBook } from "react-icons/fa";
+
+const API_URL = "http://localhost:5005/api";
+const getToken = () => localStorage.getItem("token");
 
 export default function UserDashboard() {
-  const [dailyGoal, setDailyGoal] = useState(50);
-  const [completed, setCompleted] = useState(25);
+  // Load goal from localStorage
+  const [dailyGoal, setDailyGoal] = useState(() => {
+    const saved = localStorage.getItem('dailyGoal');
+    return saved ? parseInt(saved) : 50;
+  });
+  
+  const [completed, setCompleted] = useState(0); // Changed from 25 to 0
   const [isEditingGoal, setIsEditingGoal] = useState(false);
   const [tempGoal, setTempGoal] = useState(dailyGoal);
+
+  // Load today's attempts on mount
+  useEffect(() => {
+    loadAttemptsToday();
+    
+    // Reload when user comes back to this page
+    const handleFocus = () => {
+      loadAttemptsToday();
+    };
+    
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, []);
+
+  const loadAttemptsToday = async () => {
+    try {
+      const res = await fetch(`${API_URL}/training/attempts/today`, {
+        headers: { Authorization: `Bearer ${getToken()}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setCompleted(data.data.attempts_today);
+      }
+    } catch (error) {
+      console.error("Error loading attempts:", error);
+    }
+  };
  
   const progress = (completed / dailyGoal) * 100;
   const remaining = Math.max(0, dailyGoal - completed);
@@ -16,12 +51,14 @@ export default function UserDashboard() {
     const goal = typeof tempGoal === 'string' ? parseInt(tempGoal) : tempGoal;
     if (goal > 0 && goal <= 200) {
       setDailyGoal(goal);
+      localStorage.setItem('dailyGoal', goal.toString()); // Save to localStorage
       if (completed > goal) {
         setCompleted(goal);
       }
       setIsEditingGoal(false);
     }
   };
+
  
   return (
 <div className="min-vh-100 bg-light py-4" dir="rtl">

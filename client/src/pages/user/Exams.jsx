@@ -10,6 +10,8 @@ import {
   FaBolt
 } from "react-icons/fa";
 
+const API_URL = "http://localhost:5005/api";
+const getToken = () => localStorage.getItem("token");
 
 const Exams = () => {
   const navigate = useNavigate();
@@ -23,63 +25,73 @@ const Exams = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-  try {
-    // Fake stats
-    setStats({
-      thisWeek: 3,
-      bestResult: 100,
-      averageScore: 37,
-      totalTests: 5,
-    });
+    loadExamStats();
+  }, []);
 
-    setLoading(false); 
-  } catch (err) {
-    setError("حدث خطأ أثناء تحميل البيانات");
-    setLoading(false);
-  }
-}, []);
+  const loadExamStats = async () => {
+    try {
+      const res = await fetch(`${API_URL}/exams/stats`, {
+        headers: { Authorization: `Bearer ${getToken()}` }
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        setStats({
+          thisWeek: data.data.this_week || 0,
+          bestResult: data.data.best_score || 0,
+          averageScore: data.data.average_score || 0,
+          totalTests: data.data.total_exams || 0,
+        });
+      }
+    } catch (err) {
+      console.error("Error loading exam stats:", err);
+      setError("حدث خطأ أثناء تحميل البيانات");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleCustomTest = () => {
     navigate("/exams/custom");
   };
 
   const handleDailyTest = () => {
-  navigate("/daily-test");
-};
-if (loading) {
-  return (
-    <div style={{ direction: "rtl", minHeight: "100vh", background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)", padding: "2rem" }}>
-      <div className="container d-flex align-items-center justify-content-center" style={{ minHeight: "50vh" }}>
-        <div className="text-center">
-          <div className="spinner-border text-primary mb-3" role="status">
-            <span className="visually-hidden">جاري التحميل...</span>
+    navigate("/daily-test");
+  };
+
+  if (loading) {
+    return (
+      <div style={{ direction: "rtl", minHeight: "100vh", background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)", padding: "2rem" }}>
+        <div className="container d-flex align-items-center justify-content-center" style={{ minHeight: "50vh" }}>
+          <div className="text-center">
+            <div className="spinner-border text-primary mb-3" role="status">
+              <span className="visually-hidden">جاري التحميل...</span>
+            </div>
+            <p className="text-muted">جاري تحميل الإحصائيات...</p>
           </div>
-          <p className="text-muted">جاري تحميل الإحصائيات...</p>
         </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
-if (error) {
-  return (
-    <div style={{ direction: "rtl", minHeight: "100vh", background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)", padding: "2rem" }}>
-      <div className="container">
-        <div className="alert alert-warning" role="alert">
-          <h4>تعذر تحميل الإحصائيات</h4>
-          <p>{error}</p>
-          <button className="btn btn-primary mt-2" onClick={() => window.location.reload()}>
-            إعادة المحاولة
-          </button>
+  if (error) {
+    return (
+      <div style={{ direction: "rtl", minHeight: "100vh", background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)", padding: "2rem" }}>
+        <div className="container">
+          <div className="alert alert-warning" role="alert">
+            <h4>تعذر تحميل الإحصائيات</h4>
+            <p>{error}</p>
+            <button className="btn btn-primary mt-2" onClick={() => window.location.reload()}>
+              إعادة المحاولة
+            </button>
+          </div>
         </div>
-        {/* Show page with default stats */}
       </div>
-    </div>
-  );
-}
+    );
+  }
 
   return (
-    <div style={{ direction: "rtl", minHeight: "100vh", background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)", padding: "2rem" }}>
+    <div style={{ direction: "rtl", minHeight: "100vh", background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)", padding: "2rem", paddingTop: "120px" }}>
       <div className="container">
         {/* Main Test Cards */}
         <div className="row g-4 mb-4">
@@ -96,10 +108,9 @@ if (error) {
               onMouseLeave={(e) => e.currentTarget.style.transform = "translateY(0)"}
             >
               <div className="card-body p-4 text-white">
-                {/* Header */}
                 <div className="d-flex justify-content-between align-items-center mb-3">
                   <span className="badge" style={{ background: "rgba(255, 255, 255, 0.2)", fontSize: "0.875rem" }}>
-                    <FaBolt className="me-1" /> من
+                    <FaBolt className="me-1" /> مخصص
                   </span>
                   <h3 className="card-title text-center flex-grow-1 mb-0">
                     <FaCog className="me-2" />
@@ -108,7 +119,6 @@ if (error) {
                   <FaCalendarAlt size={24} />
                 </div>
 
-                {/* Body */}
                 <p className="text-center mb-3" style={{ fontSize: "1rem", opacity: 0.9 }}>
                   صمم اختباراتك بنفسك
                 </p>
@@ -125,7 +135,6 @@ if (error) {
                   </li>
                 </ul>
 
-                {/* Button */}
                 <button 
                   className="btn btn-light w-100 mt-3 fw-bold"
                   style={{
@@ -141,7 +150,7 @@ if (error) {
                   onMouseLeave={(e) => e.currentTarget.style.background = "rgba(255, 255, 255, 0.2)"}
                 >
                   <FaCog className="me-2" />
-                   إنشاء اختبار مخصص
+                  إنشاء اختبار مخصص
                 </button>
               </div>
             </div>
@@ -160,7 +169,6 @@ if (error) {
               onMouseLeave={(e) => e.currentTarget.style.transform = "translateY(0)"}
             >
               <div className="card-body p-4 text-white">
-                {/* Header */}
                 <div className="d-flex justify-content-between align-items-center mb-3">
                   <span className="badge" style={{ background: "rgba(255, 255, 255, 0.2)", fontSize: "0.875rem" }}>
                     <FaFire className="me-1" /> يومي
@@ -172,7 +180,6 @@ if (error) {
                   <FaCalendarAlt size={24} />
                 </div>
 
-                {/* Body */}
                 <p className="text-center mb-3" style={{ fontSize: "1rem", opacity: 0.9 }}>
                   30 سؤال متنوع يومياً
                 </p>
@@ -189,11 +196,10 @@ if (error) {
                   </li>
                 </ul>
 
-                {/* Button */}
                 <Link 
-                to="/daily-test"
-                className="btn btn-light w-100 mt-3 fw-bold text-decoration-none"
-                style={{
+                  to="/daily-test"
+                  className="btn btn-light w-100 mt-3 fw-bold text-decoration-none"
+                  style={{
                     background: "rgba(255, 255, 255, 0.2)",
                     border: "none",
                     color: "white",
@@ -201,11 +207,11 @@ if (error) {
                     padding: "0.75rem",
                     backdropFilter: "blur(10px)",
                     display: "block"
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255, 255, 255, 0.3)"}
-                onMouseLeave={(e) => e.currentTarget.style.background = "rgba(255, 255, 255, 0.2)"}
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255, 255, 255, 0.3)"}
+                  onMouseLeave={(e) => e.currentTarget.style.background = "rgba(255, 255, 255, 0.2)"}
                 >
-                ▶ ابدأ الاختبار اليومي
+                  ▶ ابدأ الاختبار اليومي
                 </Link>
               </div>
             </div>
@@ -214,7 +220,6 @@ if (error) {
 
         {/* Stats Cards */}
         <div className="row g-3">
-          {/* This Week */}
           <div className="col-lg-3 col-md-6">
             <div 
               className="card shadow border-0"
@@ -236,7 +241,6 @@ if (error) {
             </div>
           </div>
 
-          {/* Best Result */}
           <div className="col-lg-3 col-md-6">
             <div 
               className="card shadow border-0"
@@ -258,7 +262,6 @@ if (error) {
             </div>
           </div>
 
-          {/* Average Score */}
           <div className="col-lg-3 col-md-6">
             <div 
               className="card shadow border-0"
@@ -280,7 +283,6 @@ if (error) {
             </div>
           </div>
 
-          {/* Total Tests */}
           <div className="col-lg-3 col-md-6">
             <div 
               className="card shadow border-0"

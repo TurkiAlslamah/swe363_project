@@ -120,6 +120,7 @@ class TrainingService {
         9: { ar: "حساب", en: "Arithmetic" },
         10: { ar: "مقارنات كمية", en: "Quantitative Comparisons" }
     };
+    
 
     const stats = await TrainingAttempt.aggregate([
         { $match: { user_id: user_id } },
@@ -218,7 +219,6 @@ class TrainingService {
 
     // ============ TRAINING OVERVIEW (For Training Page) ============
     
-    // Get single question by index
     async getQuestionByIndex(user_id, internal_type_id, index) {
     const questions = await Question.find({ internal_type_id })
         .populate("passage_id")
@@ -237,10 +237,10 @@ class TrainingService {
     // Check if user already attempted this question using q_no
     const attempt = await TrainingAttempt.findOne({
         user_id,
-        q_no: question.q_no  // Changed from question_id to q_no
+        q_no: question.q_no
     });
 
-    console.log("Checking attempt for q_no:", question.q_no, "Found:", attempt);  // Debug log
+    console.log("Checking attempt for q_no:", question.q_no, "Found:", attempt);
 
     return {
         internal_type_id: internal_type_id,
@@ -250,6 +250,7 @@ class TrainingService {
         is_first: index === 0,
         question: {
             ...question.toObject(),
+            passage: question.passage_id  // ← ADD THIS LINE
         },
         attempt_info: attempt ? {
             already_attempted: true,
@@ -262,6 +263,23 @@ class TrainingService {
             is_correct: null
         }
     };
+}
+async getUserAttemptsToday(user_id) {
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    
+    const todayEnd = new Date();
+    todayEnd.setHours(23, 59, 59, 999);
+    
+    const count = await TrainingAttempt.countDocuments({
+        user_id,
+        attempted_at: {
+            $gte: todayStart,
+            $lte: todayEnd
+        }
+    });
+    
+    return count;
 }
 
     // Get training overview for all internal types

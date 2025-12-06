@@ -52,49 +52,79 @@ class ExamService {
 
     // ============ CUSTOM TEST ============
     
-    // Start custom test
-    async startCustomTest(user_id, selections, time_per_question = 30) {
-        // selections = [{ internal_type_id: 6, count: 5 }, { internal_type_id: 7, count: 3 }]
-        
-        let allQuestions = [];
+async startCustomTest(user_id, selections, time_per_question = 30) {
+    let allQuestionIds = [];
 
-        for (const selection of selections) {
-            if (selection.count > 0) {
-                const questions = await Question.aggregate([
-                    { $match: { internal_type_id: selection.internal_type_id, status: "مقبول" } },
-                    { $sample: { size: selection.count } }
-                ]);
-                allQuestions = [...allQuestions, ...questions];
-            }
+    for (const selection of selections) {
+        if (selection.count > 0) {
+            console.log("🔍 Searching for internal_type_id:", selection.internal_type_id);
+            
+            // Check what questions exist
+            const allQuestions = await Question.find({ internal_type_id: selection.internal_type_id });
+            console.log("📊 Total questions with this type:", allQuestions.length);
+            console.log("📊 Status values:", [...new Set(allQuestions.map(q => q.status))]);
+            
+            // Try without status filter first
+            const questionsNoFilter = await Question.aggregate([
+                { $match: { internal_type_id: selection.internal_type_id } },
+                { $sample: { size: selection.count } }
+            ]);
+            console.log("✅ Found WITHOUT status filter:", questionsNoFilter.length);
+            
+            // Now with status filter
+            const questions = await Question.aggregate([
+                { $match: { internal_type_id: selection.internal_type_id, status: "مقبول" } },
+                { $sample: { size: selection.count } }
+            ]);
+            console.log("✅ Found WITH status filter:", questions.length);
+            
+            allQuestionIds = [...allQuestionIds, ...questionsNoFilter.map(q => q._id)]; // Use no filter for now
         }
-
-        if (allQuestions.length === 0) {
-            throw new ApiError(400, "يرجى اختيار عدد الأسئلة");
-        }
-
-        // Create exam
-        const exam = await Exam.create({
-            user_id,
-            exam_type: "custom",
-            questions: allQuestions.map(q => ({
-    question_id: q.q_no,  // <-- Use q_no
-    user_answer: null,
-    is_correct: false
-})),
-            total_questions: allQuestions.length,
-            time_per_question,
-            total_time: allQuestions.length * time_per_question
-        });
-
-        return {
-            exam_id: exam._id,
-            exam_type: "custom",
-            total_questions: allQuestions.length,
-            time_per_question,
-            total_time: exam.total_time,
-            questions: allQuestions
-        };
     }
+
+    console.log("🆔 Total question IDs collected:", allQuestionIds.length);
+
+    if (allQuestionIds.length === 0) {
+        throw new ApiError(400, "يرجى اختيار عدد الأسئلة");
+    }
+
+    // Now fetch full questions with populate
+    const populatedQuestions = await Question.find({ _id: { $in: allQuestionIds } })
+        .populate('passage_id');
+
+    // Create exam
+    const exam = await Exam.create({
+        user_id,
+        exam_type: "custom",
+        questions: populatedQuestions.map(q => ({
+            question_id: q.q_no,
+            user_answer: null,
+            is_correct: false
+        })),
+        total_questions: populatedQuestions.length,
+        time_per_question,
+        total_time: populatedQuestions.length * time_per_question
+    });
+
+    return {
+        exam_id: exam._id,
+        exam_type: "custom",
+        total_questions: populatedQuestions.length,
+        time_per_question,
+        total_time: exam.total_time,
+        questions: populatedQuestions.map(q => {
+            const questionObj = q.toObject();
+            return {
+                ...questionObj,
+                passage: q.passage_id ? {
+                    _id: q.passage_id._id,
+                    title: q.passage_id.title,
+                    passage_text: q.passage_id.passage_text
+                } : null
+            };
+        })
+    };
+}
 
     // ============ SUBMIT EXAM ============
     
