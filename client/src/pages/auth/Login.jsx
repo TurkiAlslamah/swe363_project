@@ -17,7 +17,6 @@ export default function Login() {
   try {
     const email = e.target.email.value;
     const password = e.target.password.value;
-    const role = e.target.role.value;
 
     // Validation
     if (!email || !password) {
@@ -33,14 +32,30 @@ export default function Login() {
       throw new Error('كلمة المرور يجب أن تكون 6 أحرف على الأقل');
     }
 
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // Call backend API
+    const response = await fetch('http://localhost:5005/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
 
-    login(email, role);
+    const data = await response.json();
 
-    if (role === "admin") navigate("/admin/dashboard");
-    else if (role === "teacher") navigate("/teacher/dashboard");
-    else navigate("/dashboard");
+    if (!data.success) {
+      throw new Error(data.message || 'فشل تسجيل الدخول');
+    }
+
+    // Save token and user data
+    localStorage.setItem('token', data.data.token);
+    localStorage.setItem('user', JSON.stringify(data.data.user));
+
+    // Login with user type from backend
+login(email, data.data.user.type === "student" ? "user" : data.data.user.type);
+
+// Navigate based on user type from backend
+if (data.data.user.type === "admin") navigate("/admin/dashboard");
+else if (data.data.user.type === "teacher") navigate("/teacher/dashboard");
+else navigate("/dashboard");  // for "student" type
 
   } catch (err) {
     setError(err.message);
@@ -97,15 +112,7 @@ export default function Login() {
             />
           </div>
 
-          {/* Role selection */}
-          <div className="mb-4">
-            <label className="form-label">نوع المستخدم</label>
-            <select name="role" className="form-select text-end" required>
-              <option value="user">مستخدم</option>
-              <option value="teacher">معلم</option>
-              <option value="admin">مدير</option>
-            </select>
-          </div>
+          
 
           <button
             type="submit"

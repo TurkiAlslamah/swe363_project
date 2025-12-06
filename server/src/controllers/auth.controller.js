@@ -26,7 +26,7 @@ export const register = asyncHandler(async (req, res) => {
         fullName,
         password,
         type: "student"  // Frontend register always creates students
-    });h
+    });
 
     res.status(201).json(
         new ApiResponse(201, result, "تم إنشاء الحساب بنجاح")
