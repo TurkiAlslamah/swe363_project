@@ -45,6 +45,10 @@ export default function EditQuestion() {
       await updateQuestion(id, formData);
       
       setSuccessMessage('تم تحديث السؤال بنجاح! سيتم مراجعته من قبل المشرف.');
+      
+      // Dispatch event to trigger refetch in MyQuestions
+      window.dispatchEvent(new Event('questionAdded'));
+      
       setTimeout(() => {
         navigate('/teacher/questions');
       }, 2000);

@@ -19,6 +19,10 @@ export default function AddQuestion() {
       await createQuestion(formData);
       
       setSuccessMessage('تم إضافة السؤال بنجاح! سيتم مراجعته من قبل المشرف.');
+      
+      // Dispatch event to trigger refetch in MyQuestions
+      window.dispatchEvent(new Event('questionAdded'));
+      
       setTimeout(() => {
         navigate('/teacher/questions');
       }, 2000);

@@ -3,7 +3,7 @@ import React from 'react';
 export default function QuestionTable({ questions, onEdit, onDelete }) {
   const getStatusBadge = (status) => {
     const statusColors = {
-      "مراجعة": "warning",
+      "قيد المراجعة": "warning",
       "مقبول": "success",
       "مرفوض": "danger",
       "بانتظار موافقة المشرف": "info",
@@ -12,9 +12,20 @@ export default function QuestionTable({ questions, onEdit, onDelete }) {
     const color = statusColors[status] || "secondary";
     return (
       <span className={`badge bg-${color}`}>
-        {status}
+        {status || "قيد المراجعة"}
       </span>
     );
+  };
+
+  // Helper function to get question text for display
+  const getQuestionText = (question) => {
+    if (question.question_text) {
+      return question.question_text;
+    }
+    if (question.question_image) {
+      return "[صورة]";
+    }
+    return "[لا يوجد نص]";
   };
 
   return (
@@ -44,45 +55,49 @@ export default function QuestionTable({ questions, onEdit, onDelete }) {
               </td>
             </tr>
           ) : (
-            questions.map((question) => (
-              <tr key={question.id}>
-                <td style={{ whiteSpace: "nowrap" }}>{question.questionOrder || question.id}</td>
-                <td>
-                  <div style={{ 
-                    maxWidth: "100%",
-                    wordBreak: "break-word",
-                    overflowWrap: "break-word"
-                  }}>
-                    {question.questionText.length > 50
-                      ? question.questionText.substring(0, 50) + "..."
-                      : question.questionText}
-                  </div>
-                </td>
-                <td style={{ whiteSpace: "nowrap" }}>{getStatusBadge(question.status)}</td>
-                <td>
-                  <div className="d-flex flex-wrap gap-1">
-                    <button
-                      className="btn btn-sm btn-primary"
-                      onClick={() => onEdit(question.id)}
-                      style={{ whiteSpace: "nowrap" }}
-                    >
-                      تعديل
-                    </button>
-                    <button
-                      className="btn btn-sm btn-danger"
-                      onClick={() => onDelete(question.id)}
-                      style={{ whiteSpace: "nowrap" }}
-                    >
-                      حذف
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))
+            questions.map((question) => {
+              const questionText = getQuestionText(question);
+              const questionId = question._id || question.id;
+              
+              return (
+                <tr key={questionId}>
+                  <td style={{ whiteSpace: "nowrap" }}>{question.q_no || questionId}</td>
+                  <td>
+                    <div style={{ 
+                      maxWidth: "100%",
+                      wordBreak: "break-word",
+                      overflowWrap: "break-word"
+                    }}>
+                      {questionText.length > 50
+                        ? questionText.substring(0, 50) + "..."
+                        : questionText}
+                    </div>
+                  </td>
+                  <td style={{ whiteSpace: "nowrap" }}>{getStatusBadge(question.status)}</td>
+                  <td>
+                    <div className="d-flex flex-wrap gap-1">
+                      <button
+                        className="btn btn-sm btn-primary"
+                        onClick={() => onEdit(questionId)}
+                        style={{ whiteSpace: "nowrap" }}
+                      >
+                        تعديل
+                      </button>
+                      <button
+                        className="btn btn-sm btn-danger"
+                        onClick={() => onDelete(questionId)}
+                        style={{ whiteSpace: "nowrap" }}
+                      >
+                        حذف
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })
           )}
         </tbody>
       </table>
     </div>
   );
 }
-
