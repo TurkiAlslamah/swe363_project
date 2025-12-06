@@ -76,6 +76,14 @@ const questionSchema = new mongoose.Schema(
             type: String,
             default: null
         },
+        comparable_value1: {
+            type: String,
+            default: null
+        },
+        comparable_value2: {
+            type: String,
+            default: null
+        },
         // Visualization
         have_visualization: {
             type: Boolean,
@@ -93,8 +101,7 @@ const questionSchema = new mongoose.Schema(
         }
     },
     { 
-        timestamps: true,
-        
+        timestamps: true
     }
 );
 
