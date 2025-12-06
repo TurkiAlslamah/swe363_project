@@ -1,15 +1,47 @@
 // src/pages/admin/AdminDashboard.jsx
-import React, { useState } from "react";
-
+import React, { useState, useEffect } from "react";
+import api from "../../api/http.js";
 
 export default function AdminDashboard() {
-  const stats = {
-    questions: 120,
-    students: 45,
-    teachers: 8,
-  };
+  // 🎯 الإحصائيات من الـ backend
+  const [stats, setStats] = useState({
+    questions: 0,
+    students: 0,
+    teachers: 0,
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
+  // 📨 مودال الرسالة العامة (زي ما عندك)
   const [showBroadcast, setShowBroadcast] = useState(false);
+
+  // جلب البيانات من /api/admin/dashboard
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const res = await api.get("/admin/dashboard");
+        // 
+        // { data: { total_questions, total_students, total_teachers } }
+        const data = res.data?.data || {};
+
+        setStats({
+          questions: data.total_questions ?? 0,
+          students: data.total_students ?? 0,
+          teachers: data.total_teachers ?? 0,
+        });
+      } catch (err) {
+        console.error(err);
+        setError("تعذر تحميل بيانات لوحة التحكم");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
 
   const handleBroadcastSubmit = (e) => {
     e.preventDefault();
@@ -17,6 +49,7 @@ export default function AdminDashboard() {
     const body = e.target.body.value;
     const target = e.target.target.value;
 
+    // حالياً تجريبي (frontend فقط)
     alert(
       `تم إرسال الرسالة:\nالعنوان: ${title}\nالنص: ${body}\nإلى: ${target}`
     );
@@ -35,8 +68,17 @@ export default function AdminDashboard() {
       }}
     >
       <div className="container text-end">
-        {/* شريط الأدمن الموحد */}
-
+        {/* رسالة تحميل / خطأ */}
+        {loading && (
+          <div className="alert alert-info mt-2">
+            جاري تحميل إحصائيات لوحة التحكم...
+          </div>
+        )}
+        {error && (
+          <div className="alert alert-danger mt-2">
+            {error}
+          </div>
+        )}
 
         {/* الكروت */}
         <div className="row g-3 mb-4 text-center mt-2">
