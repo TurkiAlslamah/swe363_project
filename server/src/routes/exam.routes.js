@@ -13,16 +13,14 @@ const router = express.Router();
 
 router.use(protect);
 
-// Start exams
+// Specific routes FIRST
 router.post("/daily", startDailyTest);
 router.post("/custom", startCustomTest);
-
-// Submit exam
-router.post("/:exam_id/submit", submitExam);
-
-// Stats & History
 router.get("/stats", getExamStats);
 router.get("/history", getExamHistory);
+
+// Dynamic routes LAST
+router.post("/:exam_id/submit", submitExam);
 router.get("/:exam_id", getExamDetails);
 
 export default router;

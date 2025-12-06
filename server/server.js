@@ -9,6 +9,7 @@ import savedRoutes from "./src/routes/saved.routes.js";
 import examRoutes from "./src/routes/exam.routes.js";
 import adminRoutes from "./src/routes/admin.routes.js";
 import authRoutes from "./src/routes/auth.routes.js";
+import reportRoutes from "./src/routes/report.routes.js";
 
 dotenv.config();
 
@@ -30,6 +31,7 @@ app.use("/api/training", trainingRoutes);
 app.use("/api/saved", savedRoutes);
 app.use("/api/exams", examRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/reports", reportRoutes);
 
 // Error handler 
 app.use(errorHandler);

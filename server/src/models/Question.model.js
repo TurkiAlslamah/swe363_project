@@ -4,7 +4,8 @@ const questionSchema = new mongoose.Schema(
     {
         q_no: {
             type: Number,
-            required: true
+            required: true,
+            unique: true 
         },
         // Content
         is_question_text: {
@@ -93,7 +94,7 @@ const questionSchema = new mongoose.Schema(
     },
     { 
         timestamps: true,
-        _id: false  // Disable auto ObjectId
+        
     }
 );
 
