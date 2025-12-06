@@ -1,62 +1,90 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaBook, FaLanguage, FaFileAlt, FaBullseye, FaStar } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
+const API_URL = "http://localhost:5005/api";
+const getToken = () => localStorage.getItem("token");
+
 export default function Training() {
   const [activeSection, setActiveSection] = useState("كمي");
+  const [trainingData, setTrainingData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const verbalSections = [
-    { id: 1, title: "استيعاب المقروء", progress: 1528, total: 15, percentage: 1, colorClass: "blue", icon: "book" },
-    { id: 2, title: "التناظر اللفظي", progress: 777, total: 4, percentage: 1, colorClass: "purple", icon: "language" },
-    { id: 3, title: "إكمال الجمل", progress: 589, total: 4, percentage: 1, colorClass: "green", icon: "file" },
-    { id: 4, title: "الخطأ السياقي", progress: 736, total: 1, percentage: 1, colorClass: "red", icon: "target" },
-    { id: 5, title: "المفردة الشاذة", progress: 516, total: 1, percentage: 1, colorClass: "orange", icon: "star" },
-  ];
+  useEffect(() => {
+    loadTrainingData();
+  }, [activeSection]);
 
-  const quantSections = [
-    { id: 6, title: "جبر", progress: 450, total: 12, percentage: 1, colorClass: "indigo", icon: "book" },
-    { id: 7, title: "هندسة", progress: 320, total: 8, percentage: 1, colorClass: "indigo", icon: "language" },
-    { id: 8, title: "الاحصاء", progress: 280, total: 6, percentage: 1, colorClass: "indigo", icon: "file" },
-    { id: 9, title: "حساب", progress: 520, total: 10, percentage: 4, colorClass: "indigo", icon: "target" },
-    { id: 10, title: "مقارنات كمية", progress: 610, total: 15, percentage: 1, colorClass: "indigo", icon: "star" },
-  ];
+  const loadTrainingData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const typeId = activeSection === "لفظي" ? 1 : 2;
+      const res = await fetch(`${API_URL}/training/overview?type_id=${typeId}`, {
+        headers: { Authorization: `Bearer ${getToken()}` }
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        setTrainingData(data.data);
+      } else {
+        setError(data.message || "حدث خطأ في تحميل البيانات");
+      }
+    } catch (err) {
+      setError("فشل الاتصال بالخادم");
+      console.error("Error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const colors = {
-    blue: "#5B8DEE",
-    purple: "#A78BFA",
-    green: "#34D399",
-    red: "#F87171",
-    orange: "#FBBF24",
-    indigo: "#6B21A8"
-  };
+    1: "#5B8DEE", 2: "#A78BFA", 3: "#34D399", 4: "#F87171", 5: "#FBBF24",
+    6: "#6B21A8", 7: "#8B5CF6", 8: "#10B981", 9: "#F59E0B", 10: "#6366F1"  // Add 10
+};
 
-  const icons = {
-    book: <FaBook size={24} />,
-    language: <FaLanguage size={24} />,
-    file: <FaFileAlt size={24} />,
-    target: <FaBullseye size={24} />,
-    star: <FaStar size={24} />
-  };
+const icons = {
+    1: <FaBook size={24} />, 2: <FaLanguage size={24} />, 3: <FaFileAlt size={24} />,
+    4: <FaBullseye size={24} />, 5: <FaStar size={24} />, 6: <FaBook size={24} />,
+    7: <FaLanguage size={24} />, 8: <FaFileAlt size={24} />, 9: <FaBullseye size={24} />,
+    10: <FaStar size={24} />  // Add 10
+};
 
-  const sections = activeSection === "لفظي" ? verbalSections : quantSections;
+  if (loading) {
+    return (
+      <div className="min-vh-100 d-flex align-items-center justify-content-center">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">جاري التحميل...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-vh-100 d-flex align-items-center justify-content-center" dir="rtl">
+        <div className="text-center">
+          <h3 className="text-danger">{error}</h3>
+          <button onClick={loadTrainingData} className="btn btn-primary mt-3">
+            إعادة المحاولة
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div 
       className="min-vh-100 p-4" 
       dir="rtl"
-      style={{ 
-        backgroundColor: "#F3F4F6",
-        paddingTop: "100px"
-      }}
+      style={{ backgroundColor: "#F3F4F6", paddingTop: "100px" }}
     >
       <div className="container" style={{ maxWidth: "800px" }}>
-        {/* Header */}
         <div className="text-center mb-4">
           <h1 className="fw-bold mb-2" style={{ color: "#1F2937", fontSize: "32px" }}>التدريبات</h1>
           <p className="text-muted mb-4">اختر نوع التدريب وابدأ رحلة التعلم</p>
         </div>
 
-        {/* Toggle Buttons */}
         <div className="d-flex justify-content-center gap-2 mb-4">
           <button
             onClick={() => setActiveSection("كمي")}
@@ -90,100 +118,103 @@ export default function Training() {
           </button>
         </div>
 
-        {/* Section Cards */}
         <div className="d-flex flex-column gap-3">
-          {sections.map((section) => {
-            const bgColor = colors[section.colorClass];
-            const icon = icons[section.icon];
-            
-            return (
-              <div
-                key={section.id}
-                className="card border-0 shadow-sm"
-                style={{
-                  borderRadius: "16px",
-                  backgroundColor: "#FFFFFF"
-                }}
-              >
-                <div className="card-body p-4">
-                  <div className="d-flex justify-content-between align-items-center">
-                    {/* Right Side - Icon & Title */}
-                    <div className="d-flex align-items-center gap-3">
-                      <div
-                        className="d-flex align-items-center justify-content-center rounded-3"
-                        style={{
-                          width: "56px",
-                          height: "56px",
-                          backgroundColor: bgColor,
-                          color: "white",
-                          flexShrink: 0
-                        }}
-                      >
-                        {icon}
-                      </div>
-                      <h5 className="fw-bold mb-0" style={{ color: "#1F2937", fontSize: "18px" }}>
-                        {section.title}
-                      </h5>
-                    </div>
-
-                    {/* Center - Progress Info */}
-                    <div className="flex-grow-1 mx-4">
-                      {/* Progress Bar */}
-                      <div
-                        className="progress mb-2"
-                        style={{ height: "6px", borderRadius: "10px", backgroundColor: "#E5E7EB" }}
-                      >
+          {trainingData.length === 0 ? (
+            <div className="text-center py-5">
+              <p className="text-muted">لا توجد تدريبات متاحة حالياً</p>
+            </div>
+          ) : (
+            trainingData.map((section) => {
+              const bgColor = colors[section.internal_type_id] || "#6366f1";
+              const icon = icons[section.internal_type_id] || <FaBook size={24} />;
+              
+              return (
+                <div
+                  key={section.internal_type_id}
+                  className="card border-0 shadow-sm"
+                  style={{ borderRadius: "16px", backgroundColor: "#FFFFFF" }}
+                >
+                  <div className="card-body p-4">
+                    <div className="d-flex justify-content-between align-items-center">
+                      <div className="d-flex align-items-center gap-3">
                         <div
-                          className="progress-bar"
+                          className="d-flex align-items-center justify-content-center rounded-3"
                           style={{
-                            width: `${section.percentage}%`,
+                            width: "56px",
+                            height: "56px",
                             backgroundColor: bgColor,
-                            borderRadius: "10px"
-                          }}
-                        ></div>
-                      </div>
-                      
-                      {/* Progress Text */}
-                      <div className="d-flex align-items-center gap-2">
-                        <span style={{ color: "#10B981", fontSize: "18px" }}>●</span>
-                        <small className="text-muted" style={{ fontSize: "13px" }}>
-                          {section.total} / {section.progress} مكتمل
-                        </small>
-                        <span 
-                          className="badge" 
-                          style={{ 
-                            backgroundColor: "#F3F4F6", 
-                            color: "#6B7280",
-                            fontWeight: "600",
-                            fontSize: "12px"
+                            color: "white",
+                            flexShrink: 0
                           }}
                         >
-                          {section.percentage}%
-                        </span>
+                          {icon}
+                        </div>
+                        <h5 className="fw-bold mb-0" style={{ color: "#1F2937", fontSize: "18px" }}>
+                          {section.internal_name}
+                        </h5>
                       </div>
-                    </div>
 
-                    {/* Left Side - Button */}
-                    <Link 
-                    to={`/training/${section.id}`}
-                    className="btn text-white fw-bold d-flex align-items-center gap-2"
-                    style={{
-                        backgroundColor: bgColor,
-                        borderRadius: "12px",
-                        border: "none",
-                        padding: "10px 20px",
-                        textDecoration: "none"
-                    }}
-                    >
-                    <span>◄</span>
-                    <span>متابعة</span>
-                    </Link>
+                      <div className="flex-grow-1 mx-4">
+                        <div
+                          className="progress mb-2"
+                          style={{ height: "6px", borderRadius: "10px", backgroundColor: "#E5E7EB" }}
+                        >
+                          <div
+                            className="progress-bar"
+                            style={{
+                              width: `${section.percentage}%`,
+                              backgroundColor: bgColor,
+                              borderRadius: "10px"
+                            }}
+                          ></div>
+                        </div>
+                        
+                        <div className="d-flex align-items-center gap-2">
+                          <span style={{ color: "#10B981", fontSize: "18px" }}>●</span>
+                          <small className="text-muted" style={{ fontSize: "13px" }}>
+                            {section.completed_questions} / {section.total_questions} مكتمل
+                          </small>
+                          <span 
+                            className="badge" 
+                            style={{ 
+                              backgroundColor: "#F3F4F6", 
+                              color: "#6B7280",
+                              fontWeight: "600",
+                              fontSize: "12px"
+                            }}
+                          >
+                            {section.percentage}%
+                          </span>
+                        </div>
+                      </div>
+
+                      <Link 
+                        to={`/training/${section.internal_type_id}`}
+                        state={{ 
+                          startIndex: section.last_question_index || 0,
+                          internalTypeName: section.internal_name,
+                          totalQuestions: section.total_questions
+                        }}
+                        className="btn text-white fw-bold d-flex align-items-center gap-2"
+                        style={{
+                          backgroundColor: bgColor,
+                          borderRadius: "12px",
+                          border: "none",
+                          padding: "10px 20px",
+                          textDecoration: "none"
+                        }}
+                      >
+                        <span>◄</span>
+                        <span>متابعة</span>
+                      </Link>
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </div>
       </div>
     </div>
-  );}
+  );
+}
