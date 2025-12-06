@@ -15,11 +15,17 @@ export const getPassageById = asyncHandler(async (req, res) => {
 export const createPassage = asyncHandler(async (req, res) => {
     const { title, passage_text } = req.body;
     
-    if (!title || !passage_text) {
-        return res.status(400).json(new ApiResponse(400, null, "العنوان والنص مطلوبان"));
+    if (!passage_text || !passage_text.trim()) {
+        return res.status(400).json(new ApiResponse(400, null, "نص الفقرة مطلوب"));
     }
 
-    const passage = await PassageService.createPassage(req.body);
+    // Title is optional, use default if not provided
+    const passageData = {
+        title: title && title.trim() ? title.trim() : 'فقرة بدون عنوان',
+        passage_text: passage_text.trim()
+    };
+
+    const passage = await PassageService.createPassage(passageData);
     res.status(201).json(new ApiResponse(201, passage, "تم إنشاء الفقرة"));
 });
 
