@@ -106,18 +106,40 @@ class QuestionService {
     }
 
     async updateQuestion(id, data) {
-        const question = await Question.findByIdAndUpdate(id, data, { new: true });
-        if (!question) {
+        // Verify question exists
+        const currentQuestion = await Question.findById(id);
+        if (!currentQuestion) {
             throw new ApiError(404, "السؤال غير موجود");
         }
+
+        // MANDATORY: Always set status to "قيد المراجعة" when updating ANY question
+        // This overrides any existing status (مقبول, مرفوض, etc.)
+        data.status = "قيد المراجعة";
+
+        // Update the question
+        const question = await Question.findByIdAndUpdate(id, data, { new: true });
         return question;
     }
 
     async deleteQuestion(id) {
+        // Delete the question
         const question = await Question.findByIdAndDelete(id);
         if (!question) {
             throw new ApiError(404, "السؤال غير موجود");
         }
+
+        // MANDATORY: Re-sequence all remaining questions after deletion
+        // Fetch all remaining questions sorted by current q_no
+        const remainingQuestions = await Question.find().sort({ q_no: 1 });
+        
+        // Reassign q_no values sequentially starting from 1
+        for (let i = 0; i < remainingQuestions.length; i++) {
+            await Question.findByIdAndUpdate(
+                remainingQuestions[i]._id,
+                { q_no: i + 1 }
+            );
+        }
+
         return question;
     }
 
