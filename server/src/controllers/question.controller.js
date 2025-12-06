@@ -94,6 +94,12 @@ export const getQuestionsByPassageId = asyncHandler(async (req, res) => {
 });
 
 export const createQuestion = asyncHandler(async (req, res) => {
+    // Generate q_no automatically if not provided
+    if (!req.body.q_no) {
+        const lastQuestion = await Question.findOne().sort({ q_no: -1 });
+        req.body.q_no = lastQuestion ? lastQuestion.q_no + 1 : 1;
+    }
+    
     const question = await QuestionService.createQuestion(req.body);
     res.status(201).json(new ApiResponse(201, question, "تم إنشاء السؤال"));
 });

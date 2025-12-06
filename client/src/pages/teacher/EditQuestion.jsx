@@ -1,44 +1,58 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import QuestionForm from './components/QuestionForm';
-import { getQuestionById, updateQuestion } from './data/mockQuestions';
+import { getQuestionById, updateQuestion } from '../../services/api';
 
 export default function EditQuestion() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [question, setQuestion] = useState(null);
   const [successMessage, setSuccessMessage] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    const foundQuestion = getQuestionById(parseInt(id));
-    if (foundQuestion) {
-      setQuestion(foundQuestion);
-    } else {
-      alert('السؤال غير موجود');
-      navigate('/teacher/questions');
-    }
-  }, [id, navigate]);
+    loadQuestion();
+  }, [id]);
 
-  const handleSubmit = (formData) => {
+  const loadQuestion = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      setSuccessMessage('');
+      const response = await getQuestionById(id);
+      setQuestion(response.data);
+    } catch (err) {
+      setError(err.message || 'السؤال غير موجود');
+      console.error('Error loading question:', err);
+      setTimeout(() => {
+        navigate('/teacher/questions');
+      }, 2000);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (formData) => {
     if (!question) return;
     
     try {
-      // Validate question number is a valid positive integer
-      const questionOrder = parseInt(formData.questionOrder);
-      if (isNaN(questionOrder) || questionOrder < 1) {
-        alert('يجب أن يكون رقم السؤال رقماً صحيحاً أكبر من الصفر');
-        return;
-      }
+      setLoading(true);
+      setError('');
+      setSuccessMessage('');
 
-      // Update question - automatic reordering will happen in mockQuestions.js
-      // No duplicate check needed - reordering handles everything
-      updateQuestion(parseInt(id), formData);
+      // Update question via API
+      await updateQuestion(id, formData);
+      
       setSuccessMessage('تم تحديث السؤال بنجاح! سيتم مراجعته من قبل المشرف.');
       setTimeout(() => {
         navigate('/teacher/questions');
       }, 2000);
-    } catch (error) {
-      alert('حدث خطأ أثناء تحديث السؤال');
+    } catch (err) {
+      setError(err.message || 'حدث خطأ أثناء تحديث السؤال');
+      console.error('Error updating question:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -46,7 +60,7 @@ export default function EditQuestion() {
     navigate('/teacher/questions');
   };
 
-  if (!question) {
+  if (loading && !question) {
     return (
       <div style={{ 
         minHeight: "100vh",
@@ -56,6 +70,21 @@ export default function EditQuestion() {
       }}>
         <div className="container py-4">
           <div className="text-center">جاري التحميل...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error && !question) {
+    return (
+      <div style={{ 
+        minHeight: "100vh",
+        background: "linear-gradient(180deg, #f4e6ff 0%, #ffffff 100%)",
+        direction: "rtl",
+        paddingTop: "80px"
+      }}>
+        <div className="container py-4">
+          <div className="alert alert-danger">{error}</div>
         </div>
       </div>
     );
@@ -79,17 +108,30 @@ export default function EditQuestion() {
           </div>
         )}
 
+        {error && (
+          <div className="alert alert-danger" role="alert">
+            {error}
+          </div>
+        )}
+
+        {loading && question && (
+          <div className="alert alert-info" role="alert">
+            جاري تحديث السؤال...
+          </div>
+        )}
+
         <div className="card shadow-sm border-0">
           <div className="card-body p-3 p-md-4">
-            <QuestionForm
-              initialData={question}
-              onSubmit={handleSubmit}
-              onCancel={handleCancel}
-            />
+            {question && (
+              <QuestionForm
+                initialData={question}
+                onSubmit={handleSubmit}
+                onCancel={handleCancel}
+              />
+            )}
           </div>
         </div>
       </div>
     </div>
   );
 }
-

@@ -4,7 +4,7 @@ const questionSchema = new mongoose.Schema(
     {
         q_no: {
             type: Number,
-            required: true
+            required: false
         },
         // Content
         is_question_text: {
@@ -75,6 +75,14 @@ const questionSchema = new mongoose.Schema(
             type: String,
             default: null
         },
+        comparable_value1: {
+            type: String,
+            default: null
+        },
+        comparable_value2: {
+            type: String,
+            default: null
+        },
         // Visualization
         have_visualization: {
             type: Boolean,
@@ -92,8 +100,7 @@ const questionSchema = new mongoose.Schema(
         }
     },
     { 
-        timestamps: true,
-        _id: false  // Disable auto ObjectId
+        timestamps: true
     }
 );
 
