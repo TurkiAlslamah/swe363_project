@@ -1,36 +1,32 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import QuestionForm from './components/QuestionForm';
-import { addQuestion, getNextAvailableQuestionNumber } from './data/mockQuestions';
+import { createQuestion } from '../../services/api';
 
 export default function AddQuestion() {
   const navigate = useNavigate();
   const [successMessage, setSuccessMessage] = useState('');
-  const [nextQuestionNumber, setNextQuestionNumber] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  useEffect(() => {
-    // Get the next available question number when component mounts
-    setNextQuestionNumber(getNextAvailableQuestionNumber());
-  }, []);
-
-  const handleSubmit = (formData) => {
+  const handleSubmit = async (formData) => {
     try {
-      // Validate question number is a valid positive integer
-      const questionOrder = parseInt(formData.questionOrder);
-      if (isNaN(questionOrder) || questionOrder < 1) {
-        alert('يجب أن يكون رقم السؤال رقماً صحيحاً أكبر من الصفر');
-        return;
-      }
+      setLoading(true);
+      setError('');
+      setSuccessMessage('');
 
-      // Add question - automatic reordering will happen in mockQuestions.js
-      // No duplicate check needed - reordering handles everything
-      addQuestion(formData);
+      // Create question via API - backend will assign q_no automatically
+      await createQuestion(formData);
+      
       setSuccessMessage('تم إضافة السؤال بنجاح! سيتم مراجعته من قبل المشرف.');
       setTimeout(() => {
         navigate('/teacher/questions');
       }, 2000);
-    } catch (error) {
-      alert('حدث خطأ أثناء إضافة السؤال');
+    } catch (err) {
+      setError(err.message || 'حدث خطأ أثناء إضافة السؤال');
+      console.error('Error adding question:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -56,10 +52,22 @@ export default function AddQuestion() {
           </div>
         )}
 
+        {error && (
+          <div className="alert alert-danger" role="alert">
+            {error}
+          </div>
+        )}
+
+        {loading && (
+          <div className="alert alert-info" role="alert">
+            جاري إضافة السؤال...
+          </div>
+        )}
+
         <div className="card shadow-sm border-0">
           <div className="card-body p-3 p-md-4">
             <QuestionForm
-              initialData={{ questionOrder: nextQuestionNumber }}
+              initialData={null}
               onSubmit={handleSubmit}
               onCancel={handleClose}
             />
@@ -69,4 +77,3 @@ export default function AddQuestion() {
     </div>
   );
 }
-

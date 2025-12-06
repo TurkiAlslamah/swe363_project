@@ -94,6 +94,7 @@ export const getQuestionsByPassageId = asyncHandler(async (req, res) => {
 });
 
 export const createQuestion = asyncHandler(async (req, res) => {
+
     // Find the last question to get the next q_no
     const lastQuestion = await Question.findOne().sort({ q_no: -1 });
     const nextQNo = lastQuestion ? lastQuestion.q_no + 1 : 1;
