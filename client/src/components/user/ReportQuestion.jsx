@@ -1,29 +1,50 @@
 import { useState } from "react";
-import { on } from "ws";
 
-export default function ReportQuestion({ show, onClose, questionId,onReportSubmitted  }) {
+const API_URL = "http://localhost:5005/api";
+const getToken = () => localStorage.getItem("token");
+
+export default function ReportQuestion({ show, onClose, questionId, onReportSubmitted }) {
   const [reportText, setReportText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!show) return null;
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!reportText.trim()) {
       alert("الرجاء كتابة سبب التبليغ");
       return;
-      
     }
 
     setIsSubmitting(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      
-      setReportText("");
+
+    try {
+      const res = await fetch(`${API_URL}/reports`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getToken()}`
+        },
+        body: JSON.stringify({
+          q_no: questionId,
+          report_text: reportText
+        })
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setReportText("");
+        onClose();
+        onReportSubmitted();
+      } else {
+        alert("فشل الإرسال: " + data.message);
+      }
+    } catch (error) {
+      console.error("Error submitting report:", error);
+      alert("حدث خطأ أثناء الإرسال");
+    } finally {
       setIsSubmitting(false);
-      onClose();
-      onReportSubmitted();
-    }, 1000);
+    }
   };
 
   const handleClose = () => {
@@ -91,7 +112,6 @@ export default function ReportQuestion({ show, onClose, questionId,onReportSubmi
             disabled={isSubmitting}
           >
             {isSubmitting ? "جاري الإرسال..." : "إرسال التبليغ"}
-            
           </button>
         </div>
       </div>

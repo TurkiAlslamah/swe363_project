@@ -2,102 +2,139 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { FaClock } from 'react-icons/fa';
 
+const API_URL = "http://localhost:5005/api";
+const getToken = () => localStorage.getItem("token");
+
 export default function CustomTestQuestions() {
   const navigate = useNavigate();
   const location = useLocation();
   const testSettings = location.state || {};
+  
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [questions, setQuestions] = useState([]);
+  const [examId, setExamId] = useState(null);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [selectedAnswers, setSelectedAnswers] = useState({});
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [testStarted, setTestStarted] = useState(false);
+  
+  const isTimedTest = testSettings.settings?.timed !== false;
 
-  // Generate questions based on selected topics
-  const generateQuestions = () => {
+  useEffect(() => {
+    startCustomExam();
+  }, []);
+
+  const startCustomExam = async () => {
     try {
-    const allQuestions = [
-      {
-        id: 1,
-        question_type: "جبر",
-        question_text: "ما هو ناتج المعادلة: 2x + 5 = 15؟",
-        question_image: null,
-        options: [
-          { id: "أ", text: "x = 5" },
-          { id: "ب", text: "x = 10" },
-          { id: "ج", text: "x = 7.5" },
-          { id: "د", text: "x = 2.5" }
-        ],
-        correct_answer: "أ"
-      },
-      {
-        id: 2,
-        question_type: "جبر",
-        question_text: "إذا كان 3y - 4 = 11، فما قيمة y؟",
-        question_image: null,
-        options: [
-          { id: "أ", text: "y = 3" },
-          { id: "ب", text: "y = 5" },
-          { id: "ج", text: "y = 7" },
-          { id: "د", text: "y = 4" }
-        ],
-        correct_answer: "ب"
-      },
-      {
-        id: 3,
-        question_type: "جبر",
-        question_text: "حل المعادلة: 5x - 10 = 20",
-        question_image: null,
-        options: [
-          { id: "أ", text: "x = 4" },
-          { id: "ب", text: "x = 6" },
-          { id: "ج", text: "x = 8" },
-          { id: "د", text: "x = 10" }
-        ],
-        correct_answer: "ب"
-      }
-    ];
+      const typeMap = {
+        readingComprehension: 1,
+        analogies: 2,
+        errorDetection: 3,
+        sentenceCompletion: 4,
+        unusualWord: 5,
+        algebra: 6,
+        geometry: 7,
+        statistics: 8,
+        arithmetic: 9,
+        comparison: 10
+      };
 
-    // Get number of questions from settings
-    const algebraCount = testSettings.quantTopics?.algebra || 0;
-    return allQuestions.slice(0, algebraCount);
+      const selections = [];
+
+      Object.entries(testSettings.verbalTopics || {}).forEach(([key, count]) => {
+        if (count > 0) {
+          selections.push({
+            internal_type_id: typeMap[key],
+            count: count
+          });
+        }
+      });
+
+      Object.entries(testSettings.quantTopics || {}).forEach(([key, count]) => {
+        if (count > 0) {
+          selections.push({
+            internal_type_id: typeMap[key],
+            count: count
+          });
+        }
+      });
+
+      if (selections.length === 0) {
+        setError('لم يتم اختيار أي أسئلة');
+        setLoading(false);
+        return;
+      }
+
+      const res = await fetch(`${API_URL}/exams/custom`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${getToken()}`
+        },
+        body: JSON.stringify({ selections })
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setExamId(data.data.exam_id);
+      const formattedQuestions = data.data.questions.map(q => ({
+  id: q._id,
+  question_type: q.internal_name || "",
+  question_text: q.question_text,
+  question_image: q.question_image,
+  is_comparable: q.is_comparable,
+  comparable_option1_text: q.comparable_option1_text,
+  comparable_option2_text: q.comparable_option2_text,
+  have_visualization: q.have_visualization,
+  visualization_image_url: q.visualization_image_url,
+  passage: q.passage || null,  // ← ADD THIS LINE
+  options: [
+    { id: "a", text: q.mc_a },
+    { id: "b", text: q.mc_b },
+    { id: "c", text: q.mc_c },
+    { id: "d", text: q.mc_d }
+  ],
+  correct_answer: q.correct_answer
+}));
+
+        setQuestions(formattedQuestions);
+        
+        const timePerQuestion = testSettings.settings?.timePerQuestion || 30;
+        setTimeLeft(timePerQuestion * formattedQuestions.length);
+        setTestStarted(true);
+      } else {
+        setError(data.message || 'فشل في تحميل الأسئلة');
+      }
     } catch (err) {
-      setError('حدث خطأ أثناء تحميل الأسئلة. يرجى المحاولة مرة أخرى.');
-      return [];
+      console.error('Error starting exam:', err);
+      setError('حدث خطأ أثناء تحميل الأسئلة');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const [questions] = useState(generateQuestions());
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [selectedAnswers, setSelectedAnswers] = useState({});
-  const [timeLeft, setTimeLeft] = useState(() => {
-    const timePerQuestion = testSettings.settings?.timePerQuestion || 30;
-    const totalQuestions = questions.length;
-    return timePerQuestion * totalQuestions;
-  });
-  const [testStarted] = useState(true);
-  const isTimedTest = testSettings.settings?.timed !== false;
-
-  // Timer countdown with auto-finish
   useEffect(() => {
-  if (!testStarted || !isTimedTest) return; // إيقاف المؤقت إذا كان غير مفعل
+    if (!testStarted || !isTimedTest) return;
 
-  if (timeLeft <= 0) {
-    handleFinishTest();
-    return;
-  }
+    if (timeLeft <= 0) {
+      handleFinishTest();
+      return;
+    }
 
-  const timer = setInterval(() => {
-    setTimeLeft(prev => {
-      if (prev <= 1) {
-        clearInterval(timer);
-        return 0;
-      }
-      return prev - 1;
-    });
-  }, 1000);
+    const timer = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
 
-  return () => clearInterval(timer);
-}, [timeLeft, testStarted, isTimedTest]);
-
-  const currentQuestion = questions[currentQuestionIndex];
-  const selectedAnswer = selectedAnswers[currentQuestionIndex];
+    return () => clearInterval(timer);
+  }, [timeLeft, testStarted, isTimedTest]);
 
   const handleAnswerSelect = (optionId) => {
     setSelectedAnswers({
@@ -118,33 +155,50 @@ export default function CustomTestQuestions() {
     }
   };
 
-  const handleFinishTest = () => {
-  try {
-    let score = 0;
-    questions.forEach((q, index) => {
-      if (selectedAnswers[index] === q.correct_answer) {
-        score++;
+  const handleFinishTest = async () => {
+    try {
+      const timePerQuestion = testSettings.settings?.timePerQuestion || 30;
+      const initialTime = timePerQuestion * questions.length;
+      const timeTaken = initialTime - timeLeft;
+
+      const answers = questions.map((q, index) => ({
+        question_id: q.id,
+        user_answer: selectedAnswers[index] || null
+      }));
+
+      const res = await fetch(`${API_URL}/exams/${examId}/submit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${getToken()}`
+        },
+        body: JSON.stringify({
+          time_spent: timeTaken,
+          answers: answers
+        })
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        navigate('/test-result', {
+          state: {
+            score: data.data.correct_count,
+            total: data.data.total_questions,
+            percentage: data.data.score_percentage,
+            timeTaken: data.data.time_spent,
+            examId: examId
+          },
+          replace: true
+        });
+      } else {
+        alert('فشل في تسليم الاختبار: ' + data.message);
       }
-    });
-
-    const timePerQuestion = testSettings.settings?.timePerQuestion || 30;
-    const initialTime = timePerQuestion * questions.length;
-    const timeTaken = initialTime - timeLeft;
-
-    navigate('/test-result', {
-      state: {
-        score,
-        total: questions.length,
-        timeTaken,
-        answers: selectedAnswers,
-        questions: questions
-      },
-      replace: true
-    });
-  } catch (err) {
-    alert('حدث خطأ أثناء إنهاء الاختبار. يرجى المحاولة مرة أخرى.');
-  }
-};
+    } catch (err) {
+      console.error('Error finishing test:', err);
+      alert('حدث خطأ أثناء إنهاء الاختبار');
+    }
+  };
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
@@ -152,7 +206,35 @@ export default function CustomTestQuestions() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Check if no questions
+  if (loading) {
+    return (
+      <div className="min-vh-100 d-flex align-items-center justify-content-center" dir="rtl">
+        <div className="text-center">
+          <div className="spinner-border text-primary mb-3" role="status">
+            <span className="visually-hidden">جاري التحميل...</span>
+          </div>
+          <p className="text-muted">جاري تحميل الأسئلة...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-vh-100 d-flex align-items-center justify-content-center" dir="rtl">
+        <div className="text-center">
+          <div className="alert alert-danger" role="alert">
+            <h4>حدث خطأ</h4>
+            <p>{error}</p>
+          </div>
+          <button onClick={() => navigate('/exams/custom')} className="btn btn-primary mt-3">
+            العودة للاختبارات
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (!questions || questions.length === 0) {
     return (
       <div className="min-vh-100 d-flex align-items-center justify-content-center" dir="rtl">
@@ -167,46 +249,8 @@ export default function CustomTestQuestions() {
     );
   }
 
-  if (!currentQuestion) {
-    return (
-      <div className="min-vh-100 d-flex align-items-center justify-content-center" dir="rtl">
-        <div className="text-center">
-          <h3>لا توجد أسئلة متاحة</h3>
-          <button onClick={() => navigate('/exams/custom')} className="btn btn-primary mt-3">
-            العودة للاختبارات
-          </button>
-        </div>
-      </div>
-    );
-  }
-    if (loading) {
-    return (
-        <div className="min-vh-100 d-flex align-items-center justify-content-center" dir="rtl">
-        <div className="text-center">
-            <div className="spinner-border text-primary mb-3" role="status">
-            <span className="visually-hidden">جاري التحميل...</span>
-            </div>
-            <p className="text-muted">جاري تحميل الأسئلة...</p>
-        </div>
-        </div>
-    );
-    }
-
-    if (error) {
-    return (
-        <div className="min-vh-100 d-flex align-items-center justify-content-center" dir="rtl">
-        <div className="text-center">
-            <div className="alert alert-danger" role="alert">
-            <h4>حدث خطأ</h4>
-            <p>{error}</p>
-            </div>
-            <button onClick={() => navigate('/exams/custom')} className="btn btn-primary mt-3">
-            العودة للاختبارات
-            </button>
-        </div>
-        </div>
-    );
-    }
+  const currentQuestion = questions[currentQuestionIndex];
+  const selectedAnswer = selectedAnswers[currentQuestionIndex];
 
   return (
     <div className="min-vh-100" dir="rtl" style={{ backgroundColor: "#E8E5F5", paddingTop: "100px", paddingBottom: "50px" }}>
@@ -216,32 +260,30 @@ export default function CustomTestQuestions() {
         <div className="card border-0 shadow-sm mb-4" style={{ borderRadius: "20px", backgroundColor: "#FFFFFF" }}>
           <div className="card-body p-3">
             <div className="row align-items-center">
-              {/* Timer */}
               {isTimedTest && (
                 <div className="col-md-4">
-                    <div className="d-flex align-items-center gap-3">
+                  <div className="d-flex align-items-center gap-3">
                     <div 
-                        className="d-flex align-items-center justify-content-center rounded-circle"
-                        style={{ 
+                      className="d-flex align-items-center justify-content-center rounded-circle"
+                      style={{ 
                         width: '50px', 
                         height: '50px', 
                         background: timeLeft < 30 ? '#DC3545' : '#4B0082',
                         color: 'white'
-                        }}
+                      }}
                     >
-                        <FaClock size={24} />
+                      <FaClock size={24} />
                     </div>
                     <div>
-                        <div className="fw-bold" style={{ fontSize: '1.5rem', color: timeLeft < 30 ? '#DC3545' : '#4B0082' }}>
+                      <div className="fw-bold" style={{ fontSize: '1.5rem', color: timeLeft < 30 ? '#DC3545' : '#4B0082' }}>
                         {formatTime(timeLeft)}
-                        </div>
-                        <small className="text-muted">الوقت المتبقي</small>
+                      </div>
+                      <small className="text-muted">الوقت المتبقي</small>
                     </div>
-                    </div>
+                  </div>
                 </div>
-                )}
+              )}
 
-              {/* Progress */}
               <div className={isTimedTest ? "col-md-8" : "col-md-12"}>
                 <div className="d-flex justify-content-between align-items-center mb-2">
                   <span className="fw-bold">السؤال {currentQuestionIndex + 1} من {questions.length}</span>
@@ -266,32 +308,89 @@ export default function CustomTestQuestions() {
         <div className="card border-0 shadow-sm mb-4" style={{ borderRadius: "20px", backgroundColor: "#FFFFFF" }}>
           <div className="card-body p-4">
             
-            {/* Question Type Badge */}
             <div className="mb-3">
               <span className="badge" style={{ backgroundColor: '#A855F7', fontSize: '14px', padding: '8px 16px', borderRadius: '8px' }}>
                 {currentQuestion.question_type}
               </span>
             </div>
+            {currentQuestion.passage && (
+  <div className="mb-4 p-4" style={{ 
+    backgroundColor: "#FFF9E6", 
+    borderRadius: "12px",
+    border: "2px solid #FFD700"
+  }}>
+    <div className="d-flex align-items-center gap-2 mb-3">
+      <span style={{ fontSize: '24px' }}>📖</span>
+      <h6 className="fw-bold mb-0" style={{ color: "#D97706" }}>
+        {currentQuestion.passage.title}
+      </h6>
+    </div>
+    <p style={{ 
+      fontSize: "16px", 
+      lineHeight: "1.8",
+      textAlign: "justify",
+      color: "#1F2937"
+    }}>
+      {currentQuestion.passage.passage_text}
+    </p>
+  </div>
+)}
 
-            {/* Question Text */}
-            <div className="mb-4">
-              <p className="mb-3" style={{ fontSize: "18px", lineHeight: "1.6", fontWeight: '500' }}>
-                {currentQuestion.question_text}
-              </p>
-              
-              {currentQuestion.question_image && (
-                <div className="text-center mb-3">
-                  <img 
-                    src={currentQuestion.question_image} 
-                    alt="question" 
-                    className="img-fluid" 
-                    style={{ maxHeight: "300px", borderRadius: "12px" }} 
-                  />
+            {currentQuestion.question_text && (
+              <div className="mb-4 p-3" style={{ backgroundColor: "#F3F4F6", borderRadius: "12px" }}>
+                <p className="mb-0" style={{ fontSize: "18px", lineHeight: "1.6" }}>
+                  {currentQuestion.question_text}
+                </p>
+              </div>
+            )}
+
+            {currentQuestion.question_image && !currentQuestion.is_comparable && (
+              <div className="text-center mb-4">
+                <img 
+                  src={currentQuestion.question_image} 
+                  alt="question" 
+                  className="img-fluid" 
+                  style={{ maxHeight: "300px", borderRadius: "12px" }} 
+                />
+              </div>
+            )}
+
+            {currentQuestion.have_visualization && currentQuestion.visualization_image_url && (
+              <div className="text-center mb-4 p-3" style={{ backgroundColor: "#E3F2FD", borderRadius: "12px" }}>
+                <h6 className="fw-bold mb-3" style={{ color: "#1976D2" }}>الشكل التوضيحي</h6>
+                <img 
+                  src={currentQuestion.visualization_image_url} 
+                  alt="visualization" 
+                  className="img-fluid" 
+                  style={{ maxHeight: "350px", borderRadius: "12px" }} 
+                />
+              </div>
+            )}
+
+            {currentQuestion.is_comparable && (
+              <div className="mb-4">
+                <h5 className="text-center mb-3 fw-bold">قارن بين:</h5>
+                <div className="row g-3">
+                  <div className="col-md-6">
+                    <div className="p-4 text-center" style={{ backgroundColor: "#E3F2FD", borderRadius: "12px", border: "2px solid #2196F3" }}>
+                      <h6 className="fw-bold mb-2" style={{ color: "#1976D2" }}>القيمة الأولى</h6>
+                      <div style={{ fontSize: "20px", fontWeight: "bold" }}>
+                        {currentQuestion.comparable_option1_text}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="p-4 text-center" style={{ backgroundColor: "#F3E5F5", borderRadius: "12px", border: "2px solid #9C27B0" }}>
+                      <h6 className="fw-bold mb-2" style={{ color: "#7B1FA2" }}>القيمة الثانية</h6>
+                      <div style={{ fontSize: "20px", fontWeight: "bold" }}>
+                        {currentQuestion.comparable_option2_text}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
-            {/* Options */}
             <div className="d-flex flex-column gap-3">
               {currentQuestion.options.map((option) => {
                 const isSelected = selectedAnswer === option.id;
@@ -322,7 +421,7 @@ export default function CustomTestQuestions() {
                           fontSize: "18px"
                         }}
                       >
-                        {option.id}
+                        {option.id.toUpperCase()}
                       </div>
                       <span style={{ fontSize: "16px", flex: 1 }}>{option.text}</span>
                     </div>
@@ -403,10 +502,9 @@ export default function CustomTestQuestions() {
           )}
         </div>
 
-        {/* Warning when time is low */}
-        {timeLeft <= 30 && timeLeft > 0 && (
+        {timeLeft <= 30 && timeLeft > 0 && isTimedTest && (
           <div className="alert alert-danger mt-3 text-center" role="alert">
-             تبقى أقل من 30 ثانية! سيتم إنهاء الاختبار تلقائياً
+            تبقى أقل من 30 ثانية! سيتم إنهاء الاختبار تلقائياً
           </div>
         )}
       </div>

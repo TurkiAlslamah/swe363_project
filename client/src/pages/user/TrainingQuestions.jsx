@@ -27,12 +27,18 @@ export default function TrainingQuestions() {
     loadQuestion();
   }, [currentQuestionIndex, trainingId]);
 
-  const loadQuestion = async () => {
+  useEffect(() => {
+  if (questionData?.question) {
+    checkIfSaved();
+  }
+}, [questionData]);
+ const loadQuestion = async () => {
     setLoading(true);
     setError(null);
-    setSelectedAnswer(null);
-    setShowResult(false);
-    setIsCorrect(false);
+    // DON'T reset these here - let them be set by attempt_info
+    // setSelectedAnswer(null);
+    // setShowResult(false);
+    // setIsCorrect(false);
     setShowExplanation(false);
     
     try {
@@ -45,10 +51,16 @@ export default function TrainingQuestions() {
       if (data.success) {
         setQuestionData(data.data);
         
+        // Show previous answer if already attempted
         if (data.data.attempt_info?.already_attempted) {
           setSelectedAnswer(data.data.attempt_info.user_answer);
           setShowResult(true);
           setIsCorrect(data.data.attempt_info.is_correct);
+        } else {
+          // Only reset if NOT attempted
+          setSelectedAnswer(null);
+          setShowResult(false);
+          setIsCorrect(false);
         }
       } else {
         setError(data.message || "فشل تحميل السؤال");
@@ -64,25 +76,34 @@ export default function TrainingQuestions() {
   const handleAnswerSelect = async (answerId) => {
     if (showResult) return;
     
+    // ADD THIS DEBUG LOG:
+    console.log("Full questionData:", questionData);
+    console.log("Question object:", questionData.question);
+    console.log("Question _id:", questionData.question._id);
+    console.log("Question q_no:", questionData.question.q_no);
+    
     setSelectedAnswer(answerId);
     const correct = answerId === questionData.question.correct_answer;
     setIsCorrect(correct);
     setShowResult(true);
     
     try {
-      await fetch(`${API_URL}/training/attempts`, {
+      const attemptRes = await fetch(`${API_URL}/training/attempts`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${getToken()}`
         },
         body: JSON.stringify({
-          question_id: questionData.question._id,
+          question_id: questionData.question.q_no,
           q_no: questionData.question.q_no,
           internal_type_id: parseInt(trainingId),
           user_answer: answerId
         })
       });
+      
+      const attemptData = await attemptRes.json();
+      console.log("Attempt response:", attemptData);
       
       await fetch(`${API_URL}/training/progress/${trainingId}`, {
         method: "PUT",
@@ -90,20 +111,26 @@ export default function TrainingQuestions() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${getToken()}`
         },
-        body: JSON.stringify({ last_question_index: currentQuestionIndex })
+        body: JSON.stringify({ last_question_index: currentQuestionIndex + 1 })
       });
     } catch (error) {
       console.error("Error saving:", error);
     }
   };
 
-  const handleNext = () => {
-    if (questionData && currentQuestionIndex < questionData.total_questions - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-      setIsSaved(false);
-      setIsReported(false);
-    }
-  };
+const handleNext = () => {
+  // Add this check at the beginning
+  if (!showResult) {
+    alert("يرجى الإجابة على السؤال أولاً");
+    return;
+  }
+  
+  if (questionData && currentQuestionIndex < questionData.total_questions - 1) {
+    setCurrentQuestionIndex(currentQuestionIndex + 1);
+    setIsSaved(false);
+    setIsReported(false);
+  }
+};
 
   const handlePrevious = () => {
     if (currentQuestionIndex > 0) {
@@ -113,18 +140,36 @@ export default function TrainingQuestions() {
     }
   };
 
-  const handleSaveQuestion = async () => {
-    try {
-      const method = isSaved ? "DELETE" : "POST";
-      await fetch(`${API_URL}/saved/${questionData.question._id}`, {
-        method,
-        headers: { Authorization: `Bearer ${getToken()}` }
-      });
+
+const handleSaveQuestion = async () => {
+  try {
+    const method = isSaved ? "DELETE" : "POST";
+    const res = await fetch(`${API_URL}/saved/${questionData.question.q_no}`, {
+      method,
+      headers: { Authorization: `Bearer ${getToken()}` }
+    });
+    const data = await res.json();
+    if (data.success) {
       setIsSaved(!isSaved);
-    } catch (error) {
-      console.error("Error saving question:", error);
     }
-  };
+  } catch (error) {
+    console.error("Error saving question:", error);
+  }
+};
+  const checkIfSaved = async () => {
+  try {
+    const res = await fetch(`${API_URL}/saved/check/${questionData.question.q_no}`, {
+      headers: { Authorization: `Bearer ${getToken()}` }
+    });
+    const data = await res.json();
+    if (data.success) {
+      setIsSaved(data.data.is_saved);
+    }
+  } catch (error) {
+    console.error("Error checking saved:", error);
+  }
+};
+
 
   if (loading) {
     return (
@@ -230,15 +275,37 @@ export default function TrainingQuestions() {
         <ReportQuestion 
           show={showReport}
           onClose={() => setShowReport(false)}
-          questionId={question?._id}
+          questionId={question.q_no}  // Changed from currentQuestion to question
           onReportSubmitted={() => {
             setIsReported(true);
             setShowReport(false);
           }}
         />
-
         <div className="card border-0 shadow-sm mb-4" style={{ borderRadius: "20px", backgroundColor: "#FFFFFF" }}>
           <div className="card-body p-4">
+
+            {question.passage && (
+  <div className="mb-4 p-4" style={{ 
+    backgroundColor: "#FFF9E6", 
+    borderRadius: "12px",
+    border: "2px solid #FFD700"
+  }}>
+    <div className="d-flex align-items-center gap-2 mb-3">
+      <span style={{ fontSize: '24px' }}>📖</span>
+      <h6 className="fw-bold mb-0" style={{ color: "#D97706" }}>
+        {question.passage.title}
+      </h6>
+    </div>
+    <p style={{ 
+      fontSize: "16px", 
+      lineHeight: "1.8",
+      textAlign: "justify",
+      color: "#1F2937"
+    }}>
+      {question.passage.passage_text}
+    </p>
+  </div>
+)}
             
             {/* Question Text */}
             {question.question_text && (

@@ -13,73 +13,102 @@ import {
 } from 'react-icons/fa';
 
 export default function Stats() {
-  
+  const API_URL = "http://localhost:5005/api";
+  const getToken = () => localStorage.getItem("token");
+
   const [stats, setStats] = useState({
-    // Training Stats
-    totalTrainingQuestions: 150,
-    correctTraining: 120,
-    wrongTraining: 30,
-    trainingAccuracy: 80,
+    totalQuestions: 0,
+    totalCorrect: 0,
+    totalWrong: 0,
+    overallAccuracy: 0,
+    totalSavedQuestions: 0,
     
-    // Exam Stats
+    // Keep exam/activity stats as placeholder
     totalExams: 12,
     totalExamQuestions: 360,
     correctExams: 270,
     wrongExams: 90,
     examAccuracy: 75,
     bestExamScore: 95,
-    
-    // Overall Stats
-    totalQuestions: 510,
-    totalCorrect: 390,
-    totalWrong: 120,
-    overallAccuracy: 76.5,
-    
-    // Time Stats
-    totalTimeSpent: 450, // minutes
-    averageTimePerQuestion: 53, // seconds
-    
-    // Streak
     currentStreak: 7,
     longestStreak: 15,
-    
-    // This Week
     thisWeekQuestions: 45,
     thisWeekAccuracy: 82,
-
-    totalSavedQuestions: 25, // Number of saved questions
   });
-  // Categories data - simple with just numbers
-const categoriesKami = [
-  { id: 1, name: "جبر", totalQuestions: 450, correctAnswers: 396, accuracy: 88 },
-  { id: 2, name: "هندسة", totalQuestions: 320, correctAnswers: 262, accuracy: 82 },
-  { id: 3, name: "إحصاء", totalQuestions: 250, correctAnswers: 188, accuracy: 75 },
-  { id: 4, name: "حساب", totalQuestions: 150, correctAnswers: 105, accuracy: 70 },
-  { id: 5, name: "مقارنات كمية", totalQuestions: 150, correctAnswers: 98, accuracy: 65 }
-];
 
-const categoriesLafzi = [
-  { id: 6, name: "استيعاب المقروء", totalQuestions: 528, correctAnswers: 462, accuracy: 88 },
-  { id: 7, name: "التناظر اللفظي", totalQuestions: 777, correctAnswers: 621, accuracy: 80 },
-  { id: 8, name: "إكمال الجمل", totalQuestions: 589, correctAnswers: 501, accuracy: 85 },
-  { id: 9, name: "الخطأ السياقي", totalQuestions: 736, correctAnswers: 588, accuracy: 80 },
-  { id: 10, name: "المفردة الشاذة", totalQuestions: 516, correctAnswers: 464, accuracy: 90 }
-];
+  const [categoriesKami, setCategoriesKami] = useState([]);
+  const [categoriesLafzi, setCategoriesLafzi] = useState([]);
+  const [selectedTab, setSelectedTab] = useState('kami');
 
-// Add state for selected tab
-const [selectedTab, setSelectedTab] = useState('kami'); // 'kami' or 'lafzi'
-
-// Get current categories based on selected tab
-const currentCategories = selectedTab === 'kami' ? categoriesKami : categoriesLafzi;
-
-// Single color scheme - purple theme
-const categoryColor = "#8B5CF6";
-const categoryBgColor = "#EDE9FE";
-  
+  const currentCategories = selectedTab === 'kami' ? categoriesKami : categoriesLafzi;
+  const categoryColor = "#8B5CF6";
+  const categoryBgColor = "#EDE9FE";
 
   useEffect(() => {
-    // TODO: Fetch stats from API
+    loadStats();
   }, []);
+
+  const loadStats = async () => {
+    try {
+      // Get overall stats
+      const statsRes = await fetch(`${API_URL}/training/stats/overall`, {
+        headers: { Authorization: `Bearer ${getToken()}` }
+      });
+      const statsData = await statsRes.json();
+
+      // Get stats by type
+      const typeStatsRes = await fetch(`${API_URL}/training/stats`, {
+        headers: { Authorization: `Bearer ${getToken()}` }
+      });
+      const typeStatsData = await typeStatsRes.json();
+
+      // Get saved questions count
+      const savedRes = await fetch(`${API_URL}/saved`, {
+        headers: { Authorization: `Bearer ${getToken()}` }
+      });
+      const savedData = await savedRes.json();
+
+      if (statsData.success) {
+        setStats(prev => ({
+          ...prev,
+          totalQuestions: statsData.data.total || 0,
+          totalCorrect: statsData.data.correct || 0,
+          totalWrong: statsData.data.wrong || 0,
+          overallAccuracy: Math.round(statsData.data.percentage) || 0,
+          totalSavedQuestions: savedData.success ? savedData.data.length : 0
+        }));
+      }
+
+     if (typeStatsData.success) {
+      // Kami categories (6-10)
+      const kamiCats = typeStatsData.data
+        .filter(item => item.internal_type_id >= 6 && item.internal_type_id <= 10)
+        .map(item => ({
+          id: item.internal_type_id,
+          name: item.internal_name || item.internal_name_en || "غير محدد",  // ADD fallback
+          totalQuestions: item.total || 0,
+          correctAnswers: item.correct || 0,
+          accuracy: Math.round(item.percentage) || 0
+        }));
+
+      // Lafzi categories (1-5)
+      const lafziCats = typeStatsData.data
+        .filter(item => item.internal_type_id >= 1 && item.internal_type_id <= 5)
+        .map(item => ({
+          id: item.internal_type_id,
+          name: item.internal_name || item.internal_name_en || "غير محدد",  // ADD fallback
+          totalQuestions: item.total || 0,
+          correctAnswers: item.correct || 0,
+          accuracy: Math.round(item.percentage) || 0
+        }));
+
+      setCategoriesKami(kamiCats);
+      setCategoriesLafzi(lafziCats);
+    }
+  } catch (error) {
+    console.error("Error loading stats:", error);
+  }
+};
 
   const StatCard = ({ icon: Icon, title, value, subtitle, color, bgColor }) => (
     <div className="col-md-6 col-lg-4 mb-4">
@@ -160,7 +189,6 @@ const categoryBgColor = "#EDE9FE";
                       </div>
                     </div>
                   </div>
-                  
                 </div>
               </div>
               <div className="col-md-4 text-center">
@@ -196,155 +224,92 @@ const categoryBgColor = "#EDE9FE";
             </div>
           </div>
         </div>
-        {/* Categories Performance Section */}
-<div className="mb-5">
-  <h3 className="fw-bold mb-4">
-    <FaBook className="me-2" /> 
-    الأداء حسب الأقسام
-  </h3>
 
-  {/* Tab Buttons */}
-  <div className="text-center mb-4">
-    <div className="btn-group" role="group">
-      <button
-        type="button"
-        className={`btn btn-lg px-5 ${selectedTab === 'kami' ? 'btn-primary' : 'btn-outline-secondary'}`}
-        onClick={() => setSelectedTab('kami')}
-        style={{ 
-          borderRadius: '12px 0 0 12px',
-          fontWeight: 'bold'
-        }}
-      >
-        القسم الكمي
-      </button>
-      <button
-        type="button"
-        className={`btn btn-lg px-5 ${selectedTab === 'lafzi' ? 'btn-primary' : 'btn-outline-secondary'}`}
-        onClick={() => setSelectedTab('lafzi')}
-        style={{ 
-          borderRadius: '0 12px 12px 0',
-          fontWeight: 'bold'
-        }}
-      >
-        القسم اللفظي
-      </button>
-    </div>
-  </div>
-  
-  <div className="row">
-    {currentCategories.map((category) => (
-      <div key={category.id} className="col-md-6 col-lg-4 mb-4">
-        <div 
-          className="card border-0 shadow-sm h-100"
-          style={{ borderRadius: '15px', transition: 'transform 0.3s' }}
-          onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
-          onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-        >
-          <div className="card-body p-4">
-            {/* Header */}
-            <div className="d-flex align-items-center gap-3 mb-3">
-              <div 
-                className="rounded-3 d-flex align-items-center justify-content-center"
+        {/* Categories Performance Section */}
+        <div className="mb-5">
+          <h3 className="fw-bold mb-4">
+            <FaBook className="me-2" /> 
+            الأداء حسب الأقسام
+          </h3>
+
+          {/* Tab Buttons */}
+          <div className="text-center mb-4">
+            <div className="btn-group" role="group">
+              <button
+                type="button"
+                className={`btn btn-lg px-5 ${selectedTab === 'kami' ? 'btn-primary' : 'btn-outline-secondary'}`}
+                onClick={() => setSelectedTab('kami')}
                 style={{ 
-                  width: '50px', 
-                  height: '50px', 
-                  backgroundColor: categoryBgColor,
-                  color: categoryColor
+                  borderRadius: '12px 0 0 12px',
+                  fontWeight: 'bold'
                 }}
               >
-                <FaBook size={24} />
-              </div>
-              <div>
-                <h5 className="fw-bold mb-0">{category.name}</h5>
-                <small className="text-muted">{category.totalQuestions} سؤال</small>
-              </div>
-            </div>
-
-            {/* Stats */}
-            <div className="d-flex justify-content-between text-center pt-3 border-top">
-              <div>
-                <div className="fw-bold" style={{ color: categoryColor, fontSize: '1.5rem' }}>
-                  {category.correctAnswers}
-                </div>
-                <small className="text-muted">صحيحة</small>
-              </div>
-              <div>
-                <div className="fw-bold" style={{ color: categoryColor, fontSize: '1.5rem' }}>
-                  {category.accuracy}%
-                </div>
-                <small className="text-muted">نسبة الأداء</small>
-              </div>
+                القسم الكمي
+              </button>
+              <button
+                type="button"
+                className={`btn btn-lg px-5 ${selectedTab === 'lafzi' ? 'btn-primary' : 'btn-outline-secondary'}`}
+                onClick={() => setSelectedTab('lafzi')}
+                style={{ 
+                  borderRadius: '0 12px 12px 0',
+                  fontWeight: 'bold'
+                }}
+              >
+                القسم اللفظي
+              </button>
             </div>
           </div>
-        </div>
-      </div>
-    ))}
-  </div>
-</div>
-
-      
-
-        {/* Exam Section */}
-        <div className="mb-5">
-          <h3 className="fw-bold mb-4"><FaClipboardCheck className="me-2" /> إحصائيات الاختبارات</h3>
+          
           <div className="row">
-            <StatCard
-              icon={FaClipboardCheck}
-              title="عدد الاختبارات"
-              value={stats.totalExams}
-              subtitle={`${stats.totalExamQuestions} سؤال إجمالي`}
-              color="#8b5cf6"
-              bgColor="#ede9fe"
-            />
-            <StatCard
-              icon={FaTrophy}
-              title="أفضل نتيجة"
-              value={`${stats.bestExamScore}%`}
-              subtitle="أعلى درجة حصلت عليها"
-              color="#f59e0b"
-              bgColor="#fef3c7"
-            />
-            <StatCard
-              icon={FaChartLine}
-              title="متوسط الأداء"
-              value={`${stats.examAccuracy}%`}
-              subtitle={`${stats.correctExams} صحيحة من ${stats.totalExamQuestions}`}
-              color="#06b6d4"
-              bgColor="#cffafe"
-            />
+            {currentCategories.map((category) => (
+              <div key={category.id} className="col-md-6 col-lg-4 mb-4">
+                <div 
+                  className="card border-0 shadow-sm h-100"
+                  style={{ borderRadius: '15px', transition: 'transform 0.3s' }}
+                  onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
+                  onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                >
+                  <div className="card-body p-4">
+                    <div className="d-flex align-items-center gap-3 mb-3">
+                      <div 
+                        className="rounded-3 d-flex align-items-center justify-content-center"
+                        style={{ 
+                          width: '50px', 
+                          height: '50px', 
+                          backgroundColor: categoryBgColor,
+                          color: categoryColor
+                        }}
+                      >
+                        <FaBook size={24} />
+                      </div>
+                      <div>
+                        <h5 className="fw-bold mb-0">{category.name}</h5>
+                        <small className="text-muted">{category.totalQuestions} سؤال</small>
+                      </div>
+                    </div>
+
+                    <div className="d-flex justify-content-between text-center pt-3 border-top">
+                      <div>
+                        <div className="fw-bold" style={{ color: categoryColor, fontSize: '1.5rem' }}>
+                          {category.correctAnswers}
+                        </div>
+                        <small className="text-muted">صحيحة</small>
+                      </div>
+                      <div>
+                        <div className="fw-bold" style={{ color: categoryColor, fontSize: '1.5rem' }}>
+                          {category.accuracy}%
+                        </div>
+                        <small className="text-muted">نسبة الأداء</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Activity Section */}
-        <div className="mb-5">
-          <h3 className="fw-bold mb-4"><FaFire className="me-2" /> النشاط والإنجازات</h3>
-          <div className="row">
-            <StatCard
-              icon={FaFire}
-              title="السلسلة الحالية"
-              value={`${stats.currentStreak} أيام`}
-              subtitle="حافظ على نشاطك اليومي"
-              color="#f97316"
-              bgColor="#ffedd5"
-            />
-            <StatCard
-              icon={FaTrophy}
-              title="أطول سلسلة"
-              value={`${stats.longestStreak} أيام`}
-              subtitle="رقمك القياسي"
-              color="#eab308"
-              bgColor="#fef9c3"
-            />
-            <StatCard
-              icon={FaCalendarAlt}
-              title="هذا الأسبوع"
-              value={`${stats.thisWeekQuestions} سؤال`}
-              subtitle={`دقة: ${stats.thisWeekAccuracy}%`}
-              color="#ec4899"
-              bgColor="#fce7f3"
-            />
-          </div>
-        </div>
+        
 
         {/* Review Wrong Answers Button */}
         <div className="card border-0 shadow-lg" style={{ borderRadius: '20px' }}>
@@ -364,24 +329,25 @@ const categoryBgColor = "#EDE9FE";
             </Link>
           </div>
         </div>
-           {/* Review Saved Questions Button */}
-          <div className="card border-0 shadow-lg mt-4" style={{ borderRadius: '20px' }}>
-            <div className="card-body p-4 text-center">
-              <FaBook size={50} className="text-primary mb-3" />
-              <h4 className="fw-bold mb-2">مراجعة الأسئلة المحفوظة</h4>
-              <p className="text-muted mb-4">
-                لديك {stats.totalSavedQuestions} سؤال محفوظ للمراجعة
-              </p>
-              <Link
-                to="/review-saved-questions"
-                className="btn btn-primary btn-lg px-5"
-                style={{ borderRadius: '12px', fontWeight: 'bold' }}
-              >
-                <FaBook className="me-2" />
-                ابدأ المراجعة
-              </Link>
-            </div>
+
+        {/* Review Saved Questions Button */}
+        <div className="card border-0 shadow-lg mt-4" style={{ borderRadius: '20px' }}>
+          <div className="card-body p-4 text-center">
+            <FaBook size={50} className="text-primary mb-3" />
+            <h4 className="fw-bold mb-2">مراجعة الأسئلة المحفوظة</h4>
+            <p className="text-muted mb-4">
+              لديك {stats.totalSavedQuestions} سؤال محفوظ للمراجعة
+            </p>
+            <Link
+              to="/review-saved-questions"
+              className="btn btn-primary btn-lg px-5"
+              style={{ borderRadius: '12px', fontWeight: 'bold' }}
+            >
+              <FaBook className="me-2" />
+              ابدأ المراجعة
+            </Link>
           </div>
+        </div>
 
       </div>
     </div>

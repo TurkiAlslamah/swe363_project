@@ -19,6 +19,8 @@ export const startCustomTest = async (req, res) => {
         const user_id = new mongoose.Types.ObjectId(req.user.userId);
         const { selections } = req.body;
 
+        console.log("📝 Received selections:", selections); // ADD THIS
+
         if (!selections || !Array.isArray(selections)) {
             return res.status(400).json(new ApiResponse(400, null, "يرجى اختيار الأسئلة"));
         }
@@ -26,6 +28,8 @@ export const startCustomTest = async (req, res) => {
         const exam = await ExamService.startCustomTest(user_id, selections);
         res.status(201).json(new ApiResponse(201, exam, "تم بدء الاختبار المخصص"));
     } catch (error) {
+        console.error("❌ Custom test error:", error); // ADD THIS
+        console.error("Stack:", error.stack); // ADD THIS
         res.status(500).json(new ApiResponse(500, null, error.message));
     }
 };
