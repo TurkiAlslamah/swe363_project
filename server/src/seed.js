@@ -24,7 +24,6 @@ const internalTypes = [
     { internal_type_id: 10, type_id: 2, internal_name: "مقارنات كمية", internal_name_en: "Quantitative Comparisons" }
   
 ];
-
 const seedDB = async () => {
     try {
         await mongoose.connect(process.env.MONGO_URI);

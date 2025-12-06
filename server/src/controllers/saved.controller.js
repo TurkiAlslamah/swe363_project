@@ -15,8 +15,9 @@ export const getSavedQuestions = asyncHandler(async (req, res) => {
 export const saveQuestion = asyncHandler(async (req, res) => {
     const user_id = new mongoose.Types.ObjectId(req.user.userId);
     const { question_id } = req.params;
+    const q_no = parseInt(question_id);  // Convert to number
 
-    const saved = await SavedService.saveQuestion(user_id, question_id);
+    const saved = await SavedService.saveQuestion(user_id, q_no);
     res.status(201).json(new ApiResponse(201, saved, "تم حفظ السؤال"));
 });
 
@@ -24,8 +25,9 @@ export const saveQuestion = asyncHandler(async (req, res) => {
 export const unsaveQuestion = asyncHandler(async (req, res) => {
     const user_id = new mongoose.Types.ObjectId(req.user.userId);
     const { question_id } = req.params;
+    const q_no = parseInt(question_id);  // Convert to number
 
-    await SavedService.unsaveQuestion(user_id, question_id);
+    await SavedService.unsaveQuestion(user_id, q_no);
     res.status(200).json(new ApiResponse(200, null, "تم إلغاء حفظ السؤال"));
 });
 
@@ -33,7 +35,8 @@ export const unsaveQuestion = asyncHandler(async (req, res) => {
 export const checkSaved = asyncHandler(async (req, res) => {
     const user_id = new mongoose.Types.ObjectId(req.user.userId);
     const { question_id } = req.params;
+    const q_no = parseInt(question_id);  // Convert to number
 
-    const isSaved = await SavedService.isQuestionSaved(user_id, question_id);
+    const isSaved = await SavedService.isQuestionSaved(user_id, q_no);
     res.status(200).json(new ApiResponse(200, { is_saved: isSaved }, "تم التحقق"));
 });
