@@ -37,10 +37,31 @@ export default function Register() {
       throw new Error('كلمتا المرور غير متطابقتين');
     }
 
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // Call backend API
+    const response = await fetch('http://localhost:5005/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        email, 
+        fullName, 
+        password 
+      })
+    });
 
+    const data = await response.json();
+
+    if (!data.success) {
+      throw new Error(data.message || 'فشل إنشاء الحساب');
+    }
+
+    // Save token and user data
+    localStorage.setItem('token', data.data.token);
+    localStorage.setItem('user', JSON.stringify(data.data.user));
+
+    // Auto login after registration
     login(email, "user");
+
+    // Navigate to dashboard (always student dashboard since register creates students)
     navigate("/dashboard");
 
   } catch (err) {
