@@ -94,16 +94,20 @@ export const getQuestionsByPassageId = asyncHandler(async (req, res) => {
 });
 
 export const createQuestion = asyncHandler(async (req, res) => {
-    // Generate q_no automatically if not provided
-    if (!req.body.q_no) {
-        const lastQuestion = await Question.findOne().sort({ q_no: -1 });
-        req.body.q_no = lastQuestion ? lastQuestion.q_no + 1 : 1;
-    }
+
+    // Find the last question to get the next q_no
+    const lastQuestion = await Question.findOne().sort({ q_no: -1 });
+    const nextQNo = lastQuestion ? lastQuestion.q_no + 1 : 1;
     
-    const question = await QuestionService.createQuestion(req.body);
+    // Add auto-incremented q_no to the request body
+    const questionData = {
+        ...req.body,
+        q_no: nextQNo  
+    };
+    
+    const question = await QuestionService.createQuestion(questionData);
     res.status(201).json(new ApiResponse(201, question, "تم إنشاء السؤال"));
 });
-
 export const updateQuestion = asyncHandler(async (req, res) => {
     const question = await QuestionService.updateQuestion(req.params.id, req.body);
     res.status(200).json(new ApiResponse(200, question, "تم تحديث السؤال"));
@@ -114,38 +118,52 @@ export const deleteQuestion = asyncHandler(async (req, res) => {
     res.status(200).json(new ApiResponse(200, null, "تم حذف السؤال"));
 });
 export const bulkCreateQuestions = asyncHandler(async (req, res) => {
-    const lastQuestion = await Question.findOne().sort({ _id: -1 });
-    let nextId = lastQuestion ? lastQuestion._id + 1 : 1;
+    // LOG THE INCOMING DATA
+    console.log('Received data:', JSON.stringify(req.body[0], null, 2));
+    
+    const lastQuestion = await Question.findOne().sort({ q_no: -1 });
+    let nextQNo = lastQuestion ? lastQuestion.q_no + 1 : 1;
 
-    const questions = req.body.map(q => ({
-        q_no: nextId++,
-        is_question_text: q.is_question_text ?? true,
-        question_text: q.question_text || null,
-        question_image: q.question_image || null,
-        type_id: q.type_id,
-        internal_type_id: q.internal_type_id,
-        mc_a: q.mc_a_text || "—",
-        mc_b: q.mc_b_text || "—",
-        mc_c: q.mc_c_text || "—",
-        mc_d: q.mc_d_text || "—",
-        correct_answer: (q.mc_correct || "a").toLowerCase(),
-        explanation: q.explanation_text || null,
-        is_comparable: q.comparable_question || false,
-        comparable_option1_text: q.comparable_option1_text || null,
-        comparable_option2_text: q.comparable_option2_text || null,
-        have_visualization: q.have_visualization || false,
-        visualization_image_url: q.visualization_image || null,
-        status: "مقبول"
-    }));
+    const questions = req.body.map(q => {
+        // LOG EACH QUESTION MAPPING
+        console.log('Mapping question:', {
+            q_no: q.q_no,
+            mc_a: q.mc_a,
+            mc_b: q.mc_b,
+            mc_c: q.mc_c,
+            mc_d: q.mc_d
+        });
+        
+        return {
+            q_no: nextQNo++,
+            is_question_text: q.is_question_text ?? true,
+            question_text: q.question_text || null,
+            question_image: q.question_image || null,
+            type_id: q.type_id,
+            internal_type_id: q.internal_type_id,
+            mc_a: q.mc_a || "—",  // Default to em dash if missing
+            mc_b: q.mc_b || "—",
+            mc_c: q.mc_c || "—",
+            mc_d: q.mc_d || "—",
+            correct_answer: (q.correct_answer || "a").toLowerCase(),
+            explanation: q.explanation || null,
+            is_comparable: q.is_comparable || false,
+            comparable_option1_text: q.comparable_option1_text || null,
+            comparable_option2_text: q.comparable_option2_text || null,
+            have_visualization: q.have_visualization || false,
+            visualization_image_url: q.visualization_image_url || null,
+            status: "مقبول"
+        };
+    });
 
     const result = await Question.insertMany(questions);
     res.status(201).json(new ApiResponse(201, { count: result.length }, `تم إضافة ${result.length} سؤال`));
 });
 export const deleteAllQuestions = asyncHandler(async (req, res) => {
-    await Question.deleteMany({});
-    res.status(200).json(new ApiResponse(200, null, "تم حذف جميع الأسئلة"));
-});
-
+    const result = await Question.deleteMany({});
+    res.status(200).json(new ApiResponse(200, { deletedCount: result.deletedCount }, `تم حذف ${result.deletedCount} سؤال`));
+}
+);
 // ============ RANDOM QUESTIONS ============
 export const getRandomQuestions = asyncHandler(async (req, res) => {
     const { type_id, count } = req.query;
