@@ -1,28 +1,64 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import QuestionTable from './components/QuestionTable';
-import { getQuestions, deleteQuestion } from './data/mockQuestions';
+import { getQuestions, deleteQuestion as deleteQuestionAPI } from '../../services/api';
 
 export default function MyQuestions() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [questions, setQuestions] = useState(getQuestions());
+  const [questions, setQuestions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  // Refresh questions when component mounts or when returning from other pages
+  // Fetch questions from API
+  const fetchQuestions = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const response = await getQuestions();
+      setQuestions(response.data || []);
+    } catch (err) {
+      setError(err.message || 'حدث خطأ أثناء جلب الأسئلة');
+      console.error('Error fetching questions:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Load questions on mount and when location changes
   useEffect(() => {
-    setQuestions(getQuestions());
+    fetchQuestions();
   }, [location.pathname]);
+
+  // Listen for question added event (from AddQuestion page)
+  useEffect(() => {
+    const handleQuestionAdded = () => {
+      fetchQuestions();
+    };
+
+    // Listen for custom event
+    window.addEventListener('questionAdded', handleQuestionAdded);
+    
+    return () => {
+      window.removeEventListener('questionAdded', handleQuestionAdded);
+    };
+  }, []);
 
   const handleEdit = (id) => {
     navigate(`/teacher/questions/edit/${id}`);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm('هل أنت متأكد من حذف هذا السؤال؟')) {
-      deleteQuestion(id);
-      // Refresh the questions list after deletion
-      setQuestions(getQuestions());
-      alert('تم حذف السؤال بنجاح');
+      try {
+        await deleteQuestionAPI(id);
+        // Refresh the questions list after deletion
+        await fetchQuestions();
+        alert('تم حذف السؤال بنجاح');
+      } catch (err) {
+        alert('حدث خطأ أثناء حذف السؤال');
+        console.error('Error deleting question:', err);
+      }
     }
   };
 
@@ -48,17 +84,33 @@ export default function MyQuestions() {
           </button>
         </div>
 
-        <div className="card shadow-sm border-0">
-          <div className="card-body p-2 p-md-4">
-            <QuestionTable
-              questions={questions}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-            />
+        {error && (
+          <div className="alert alert-danger" role="alert">
+            {error}
           </div>
-        </div>
+        )}
+
+        {loading ? (
+          <div className="card shadow-sm border-0">
+            <div className="card-body p-4 text-center">
+              <div className="spinner-border text-primary" role="status">
+                <span className="visually-hidden">جاري التحميل...</span>
+              </div>
+              <p className="mt-2 text-muted">جاري تحميل الأسئلة...</p>
+            </div>
+          </div>
+        ) : (
+          <div className="card shadow-sm border-0">
+            <div className="card-body p-2 p-md-4">
+              <QuestionTable
+                questions={questions}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
 }
-
