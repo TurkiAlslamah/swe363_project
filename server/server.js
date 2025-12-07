@@ -44,15 +44,16 @@ app.use("/api/evaluations", evaluationRoutes);
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../client/dist')));
   
-  // Handle React routing - USE app.use() not app.get('*')
+  // Handle React routing
   app.use((req, res) => {
     res.sendFile(path.join(__dirname, '../client/dist', 'index.html'));
   });
-}
-// Health check
-app.get("/", (req, res) => {
+} else {
+  // Health check for development only
+  app.get("/", (req, res) => {
     res.json({ message: "Qdrat API is running 🚀" });
-});
+  });
+}
 
 // Error handler 
 app.use(errorHandler);
