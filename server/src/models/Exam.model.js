@@ -2,8 +2,7 @@ import mongoose from "mongoose";
 
 const examAnswerSchema = new mongoose.Schema({
     question_id: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Question",
+        type: Number,  // <-- Change to Number (stores q_no)
         required: true
     },
     user_answer: {

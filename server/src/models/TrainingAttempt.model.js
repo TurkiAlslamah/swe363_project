@@ -7,12 +7,7 @@ const trainingAttemptSchema = new mongoose.Schema(
             ref: "User",
             required: true
         },
-        question_id: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Question",
-            required: true
-        },
-        q_no: {
+        q_no: {  // Remove question_id, keep only q_no
             type: Number,
             required: true
         },
@@ -39,6 +34,6 @@ const trainingAttemptSchema = new mongoose.Schema(
 
 // Index for faster queries
 trainingAttemptSchema.index({ user_id: 1, internal_type_id: 1 });
-trainingAttemptSchema.index({ user_id: 1, question_id: 1 });
+trainingAttemptSchema.index({ user_id: 1, q_no: 1 });  // Changed from question_id
 
 export default mongoose.model("TrainingAttempt", trainingAttemptSchema);

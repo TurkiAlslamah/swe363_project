@@ -7,9 +7,8 @@ const savedQuestionSchema = new mongoose.Schema(
             ref: "User",
             required: true
         },
-        question_id: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Question",
+        q_no: {  
+            type: Number,
             required: true
         }
     },
@@ -17,7 +16,6 @@ const savedQuestionSchema = new mongoose.Schema(
 );
 
 // One save per user per question
-savedQuestionSchema.index({ user_id: 1, question_id: 1 }, { unique: true });
+savedQuestionSchema.index({ user_id: 1, q_no: 1 }, { unique: true });
 
 export default mongoose.model("SavedQuestion", savedQuestionSchema);
-

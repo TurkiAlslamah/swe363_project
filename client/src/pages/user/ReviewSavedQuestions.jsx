@@ -1,78 +1,62 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaBook, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 
+const API_URL = "http://localhost:5005/api";
+const getToken = () => localStorage.getItem("token");
+
 export default function ReviewSavedQuestions() {
   const navigate = useNavigate();
-  
 
-  // Mock saved questions - replace with API data
-  // These are questions the user previously saved (bookmarked) and answered
-  const [questions] = useState([
-    {
-      id: 1,
-      question_type: "جبر",
-      question_text: "ما هو ناتج المعادلة: 3x - 7 = 20؟",
-      question_image: null,
-      options: [
-        { id: "أ", text: "x = 9" },
-        { id: "ب", text: "x = 7" },
-        { id: "ج", text: "x = 13" },
-        { id: "د", text: "x = 6" }
-      ],
-      correct_answer: "أ",
-      user_answer: "أ", // User got this correct
-      explanation: "نضيف 7 للطرفين: 3x = 27، ثم نقسم على 3: x = 9"
-    },
-    {
-      id: 2,
-      question_type: "هندسة",
-      question_text: "ما هو محيط دائرة نصف قطرها 7 سم؟ (π ≈ 3.14)",
-      question_image: null,
-      options: [
-        { id: "أ", text: "44 سم" },
-        { id: "ب", text: "22 سم" },
-        { id: "ج", text: "154 سم" },
-        { id: "د", text: "49 سم" }
-      ],
-      correct_answer: "أ",
-      user_answer: "ب", // User got this wrong
-      explanation: "محيط الدائرة = 2πr = 2 × 3.14 × 7 = 43.96 ≈ 44 سم"
-    },
-    {
-      id: 3,
-      question_type: "لغة عربية",
-      question_text: "ما هو المفعول به في الجملة: 'قرأ الطالب الكتاب'؟",
-      question_image: null,
-      options: [
-        { id: "أ", text: "الطالب" },
-        { id: "ب", text: "الكتاب" },
-        { id: "ج", text: "قرأ" },
-        { id: "د", text: "لا يوجد" }
-      ],
-      correct_answer: "ب",
-      user_answer: "ب", // User got this correct
-      explanation: "المفعول به هو 'الكتاب' لأنه وقع عليه فعل القراءة"
-    },
-    {
-      id: 4,
-      question_type: "حساب",
-      question_text: "ما هو ناتج: 15% من 200؟",
-      question_image: null,
-      options: [
-        { id: "أ", text: "30" },
-        { id: "ب", text: "15" },
-        { id: "ج", text: "45" },
-        { id: "د", text: "20" }
-      ],
-      correct_answer: "أ",
-      user_answer: "ج", // User got this wrong
-      explanation: "15% من 200 = (15/100) × 200 = 30"
-    }
-  ]);
-
+  const [questions, setQuestions] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [showExplanation, setShowExplanation] = useState(false);
+
+  useEffect(() => {
+    loadSavedQuestions();
+  }, []);
+
+  const loadSavedQuestions = async () => {
+    try {
+      const res = await fetch(`${API_URL}/saved`, {
+        headers: { Authorization: `Bearer ${getToken()}` }
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        // Transform API data to match component structure
+        const formattedQuestions = data.data.map(item => ({
+          id: item._id,
+          q_no: item.q_no,
+          question_type: "سؤال محفوظ", // You can add internal_type later if needed
+          question_text: item.question?.question_text || "",
+          question_image: item.question?.question_image || null,
+          options: [
+            { id: "a", text: item.question?.mc_a },
+            { id: "b", text: item.question?.mc_b },
+            { id: "c", text: item.question?.mc_c },
+            { id: "d", text: item.question?.mc_d }
+          ],
+          correct_answer: item.question?.correct_answer,
+          user_answer: null, // Saved questions don't have user_answer
+          explanation: item.question?.explanation || "لا يوجد شرح متاح",
+          // Add comparable and visualization data
+          is_comparable: item.question?.is_comparable || false,
+          comparable_option1_text: item.question?.comparable_option1_text || null,
+          comparable_option2_text: item.question?.comparable_option2_text || null,
+          have_visualization: item.question?.have_visualization || false,
+          visualization_image_url: item.question?.visualization_image_url || null
+        }));
+
+        setQuestions(formattedQuestions);
+      }
+    } catch (error) {
+      console.error("Error loading saved questions:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const currentQuestion = questions[currentQuestionIndex];
 
@@ -94,11 +78,43 @@ export default function ReviewSavedQuestions() {
     navigate('/stats');
   };
 
-  if (!currentQuestion) {
+  const handleUnsave = async () => {
+    try {
+      const res = await fetch(`${API_URL}/saved/${currentQuestion.q_no}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${getToken()}` }
+      });
+      
+      if (res.ok) {
+        // Remove from list
+        const newQuestions = questions.filter((_, index) => index !== currentQuestionIndex);
+        setQuestions(newQuestions);
+        
+        // Adjust index if needed
+        if (currentQuestionIndex >= newQuestions.length && newQuestions.length > 0) {
+          setCurrentQuestionIndex(newQuestions.length - 1);
+        }
+      }
+    } catch (error) {
+      console.error("Error unsaving question:", error);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-vh-100 d-flex align-items-center justify-content-center">
+        <div className="spinner-border text-primary" role="status"></div>
+      </div>
+    );
+  }
+
+  if (!currentQuestion || questions.length === 0) {
     return (
       <div className="min-vh-100 d-flex align-items-center justify-content-center" dir="rtl">
         <div className="text-center">
+          <FaBook size={80} className="text-muted mb-4" />
           <h3>لا توجد أسئلة محفوظة للمراجعة!</h3>
+          <p className="text-muted">احفظ الأسئلة المهمة لمراجعتها لاحقاً</p>
           <button onClick={() => navigate('/stats')} className="btn btn-primary mt-3">
             العودة للإحصائيات
           </button>
@@ -106,10 +122,6 @@ export default function ReviewSavedQuestions() {
       </div>
     );
   }
-
-  // Check if user got this question correct
-  const isCorrect = currentQuestion.user_answer === currentQuestion.correct_answer;
-  
 
   return (
     <div className="min-vh-100" dir="rtl" style={{ backgroundColor: "#E8F4F8", paddingTop: "100px", paddingBottom: "50px" }}>
@@ -159,46 +171,82 @@ export default function ReviewSavedQuestions() {
         <div className="card border-0 shadow-sm mb-4" style={{ borderRadius: "20px", backgroundColor: "#FFFFFF" }}>
           <div className="card-body p-4">
             
-            {/* Question Type Badge & Status */}
+            {/* Question Type Badge & Unsave Button */}
             <div className="mb-3 d-flex justify-content-between align-items-center">
               <span className="badge bg-primary" style={{ fontSize: '14px', padding: '8px 16px', borderRadius: '8px' }}>
                 {currentQuestion.question_type}
               </span>
-              {isCorrect ? (
-                <span className="badge bg-success" style={{ fontSize: '14px', padding: '8px 16px', borderRadius: '8px' }}>
-                  <FaCheckCircle className="me-1" />
-                  إجابة صحيحة
-                </span>
-              ) : (
-                <span className="badge bg-danger" style={{ fontSize: '14px', padding: '8px 16px', borderRadius: '8px' }}>
-                  <FaTimesCircle className="me-1" />
-                  إجابة خاطئة
-                </span>
-              )}
+              <button 
+                onClick={handleUnsave}
+                className="btn btn-sm btn-outline-danger"
+                style={{ borderRadius: '8px' }}
+              >
+                إلغاء الحفظ
+              </button>
             </div>
 
             {/* Question Text */}
-            <div className="mb-4">
-              <p className="mb-3" style={{ fontSize: "18px", lineHeight: "1.6", fontWeight: '500' }}>
-                {currentQuestion.question_text}
-              </p>
-              
-              {currentQuestion.question_image && (
-                <div className="text-center mb-3">
-                  <img 
-                    src={currentQuestion.question_image} 
-                    alt="question" 
-                    className="img-fluid" 
-                    style={{ maxHeight: "300px", borderRadius: "12px" }} 
-                  />
+            {currentQuestion.question_text && (
+              <div className="mb-4 p-3" style={{ backgroundColor: "#F3F4F6", borderRadius: "12px" }}>
+                <p className="mb-0" style={{ fontSize: "18px", lineHeight: "1.6" }}>
+                  {currentQuestion.question_text}
+                </p>
+              </div>
+            )}
+
+            {/* Question Image (if not comparable) */}
+            {currentQuestion.question_image && !currentQuestion.is_comparable && (
+              <div className="text-center mb-4">
+                <img 
+                  src={currentQuestion.question_image} 
+                  alt="question" 
+                  className="img-fluid" 
+                  style={{ maxHeight: "300px", borderRadius: "12px" }} 
+                />
+              </div>
+            )}
+
+            {/* Visualization */}
+            {currentQuestion.have_visualization && currentQuestion.visualization_image_url && (
+              <div className="text-center mb-4 p-3" style={{ backgroundColor: "#E3F2FD", borderRadius: "12px" }}>
+                <h6 className="fw-bold mb-3" style={{ color: "#1976D2" }}>الشكل التوضيحي</h6>
+                <img 
+                  src={currentQuestion.visualization_image_url} 
+                  alt="visualization" 
+                  className="img-fluid" 
+                  style={{ maxHeight: "350px", borderRadius: "12px" }} 
+                />
+              </div>
+            )}
+
+            {/* Comparable Questions */}
+            {currentQuestion.is_comparable && (
+              <div className="mb-4">
+                <h5 className="text-center mb-3 fw-bold">قارن بين:</h5>
+                <div className="row g-3">
+                  <div className="col-md-6">
+                    <div className="p-4 text-center" style={{ backgroundColor: "#E3F2FD", borderRadius: "12px", border: "2px solid #2196F3" }}>
+                      <h6 className="fw-bold mb-2" style={{ color: "#1976D2" }}>القيمة الأولى</h6>
+                      <div style={{ fontSize: "20px", fontWeight: "bold" }}>
+                        {currentQuestion.comparable_option1_text}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="p-4 text-center" style={{ backgroundColor: "#F3E5F5", borderRadius: "12px", border: "2px solid #9C27B0" }}>
+                      <h6 className="fw-bold mb-2" style={{ color: "#7B1FA2" }}>القيمة الثانية</h6>
+                      <div style={{ fontSize: "20px", fontWeight: "bold" }}>
+                        {currentQuestion.comparable_option2_text}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
             {/* Options */}
             <div className="d-flex flex-column gap-3 mb-4">
               {currentQuestion.options.map((option) => {
-                const isUserAnswer = currentQuestion.user_answer === option.id;
                 const isCorrectAnswer = option.id === currentQuestion.correct_answer;
 
                 return (
@@ -207,16 +255,8 @@ export default function ReviewSavedQuestions() {
                     className="p-3 d-flex align-items-center justify-content-between"
                     style={{
                       borderRadius: "12px",
-                      border: isCorrectAnswer 
-                        ? "2px solid #28A745" 
-                        : isUserAnswer 
-                        ? "2px solid #DC3545" 
-                        : "2px solid #E5E7EB",
-                      backgroundColor: isCorrectAnswer 
-                        ? "#D4EDDA" 
-                        : isUserAnswer 
-                        ? "#F8D7DA" 
-                        : "#FFFFFF"
+                      border: "2px solid #E5E7EB",
+                      backgroundColor: "#FFFFFF"
                     }}
                   >
                     <div className="d-flex align-items-center gap-3 w-100">
@@ -226,31 +266,15 @@ export default function ReviewSavedQuestions() {
                           width: "40px",
                           height: "40px",
                           borderRadius: "8px",
-                          backgroundColor: isCorrectAnswer 
-                            ? "#28A745" 
-                            : isUserAnswer 
-                            ? "#DC3545" 
-                            : "#F3F4F6",
-                          color: (isCorrectAnswer || isUserAnswer) ? "#FFFFFF" : "#6B7280",
+                          backgroundColor: "#F3F4F6",
+                          color: "#6B7280",
                           fontWeight: "bold",
                           fontSize: "18px"
                         }}
                       >
-                        {option.id}
+                        {option.id.toUpperCase()}
                       </div>
                       <span style={{ fontSize: "16px", flex: 1 }}>{option.text}</span>
-                      {isCorrectAnswer && (
-                        <div className="d-flex align-items-center gap-2">
-                          <FaCheckCircle className="text-success" size={20} />
-                          <span className="badge bg-success">الإجابة الصحيحة</span>
-                        </div>
-                      )}
-                      {isUserAnswer && !isCorrectAnswer && (
-                        <div className="d-flex align-items-center gap-2">
-                          <FaTimesCircle className="text-danger" size={20} />
-                          <span className="badge bg-danger">إجابتك</span>
-                        </div>
-                      )}
                     </div>
                   </div>
                 );
@@ -264,34 +288,18 @@ export default function ReviewSavedQuestions() {
                 onClick={() => setShowExplanation(!showExplanation)}
                 style={{ borderRadius: '10px' }}
               >
-                {showExplanation ? '🔽 إخفاء الشرح' : '📖 عرض الشرح'}
+                {showExplanation ? '🔽 إخفاء الإجابة والشرح' : '📖 عرض الإجابة والشرح'}
               </button>
               
-              {showExplanation && currentQuestion.explanation && (
-                <div 
-                  className="alert" 
-                  style={{ 
-                    borderRadius: '12px',
-                    backgroundColor: isCorrect ? '#D4EDDA' : '#F8D7DA',
-                    borderColor: isCorrect ? '#28A745' : '#DC3545',
-                    borderWidth: '1px',
-                    borderStyle: 'solid'
-                  }}
-                >
-                  <div className="d-flex align-items-start gap-2 mb-2">
-                    {isCorrect ? (
-                      <>
-                        <FaCheckCircle className="text-success mt-1" size={20} />
-                        <h6 className="fw-bold mb-0 text-success">أحسنت! إجابتك صحيحة 🎉</h6>
-                      </>
-                    ) : (
-                      <>
-                        <FaTimesCircle className="text-danger mt-1" size={20} />
-                        <h6 className="fw-bold mb-0 text-danger">الإجابة الصحيحة: {currentQuestion.correct_answer}</h6>
-                      </>
-                    )}
+              {showExplanation && (
+                <div className="alert alert-success" style={{ borderRadius: '12px' }}>
+                  <div className="d-flex align-items-center gap-2 mb-3">
+                    <FaCheckCircle className="text-success" size={20} />
+                    <h6 className="fw-bold mb-0 text-success">
+                      الإجابة الصحيحة: {currentQuestion.correct_answer.toUpperCase()}
+                    </h6>
                   </div>
-                  <h6 className="fw-bold mb-2 mt-3">💡 الشرح:</h6>
+                  <h6 className="fw-bold mb-2">💡 الشرح:</h6>
                   <p className="mb-0">{currentQuestion.explanation}</p>
                 </div>
               )}

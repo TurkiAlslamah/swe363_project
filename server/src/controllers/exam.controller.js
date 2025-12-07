@@ -1,63 +1,89 @@
 import ExamService from "../services/exam.service.js";
 import ApiResponse from "../utils/ApiResponse.js";
-import asyncHandler from "../utils/asyncHandler.js";
 import mongoose from "mongoose";
 
 // Start daily test
-export const startDailyTest = asyncHandler(async (req, res) => {
-    const user_id = new mongoose.Types.ObjectId(req.user.userId);
-    const { time_per_question } = req.body;
-
-    const exam = await ExamService.startDailyTest(user_id, time_per_question || 30);
-    res.status(201).json(new ApiResponse(201, exam, "تم بدء الاختبار اليومي"));
-});
+export const startDailyTest = async (req, res) => {
+    try {
+        const user_id = new mongoose.Types.ObjectId(req.user.userId);
+        const exam = await ExamService.startDailyTest(user_id);
+        res.status(201).json(new ApiResponse(201, exam, "تم بدء الاختبار اليومي"));
+    } catch (error) {
+        res.status(500).json(new ApiResponse(500, null, error.message));
+    }
+};
 
 // Start custom test
-export const startCustomTest = asyncHandler(async (req, res) => {
-    const user_id = new mongoose.Types.ObjectId(req.user.userId);
-    const { selections, time_per_question } = req.body;
+export const startCustomTest = async (req, res) => {
+    try {
+        const user_id = new mongoose.Types.ObjectId(req.user.userId);
+        const { selections } = req.body;
 
-    // selections = [{ internal_type_id: 6, count: 5 }, ...]
-    if (!selections || !Array.isArray(selections)) {
-        return res.status(400).json(new ApiResponse(400, null, "يرجى اختيار الأسئلة"));
+        console.log("📝 Received selections:", selections); // ADD THIS
+
+        if (!selections || !Array.isArray(selections)) {
+            return res.status(400).json(new ApiResponse(400, null, "يرجى اختيار الأسئلة"));
+        }
+
+        const exam = await ExamService.startCustomTest(user_id, selections);
+        res.status(201).json(new ApiResponse(201, exam, "تم بدء الاختبار المخصص"));
+    } catch (error) {
+        console.error("❌ Custom test error:", error); // ADD THIS
+        console.error("Stack:", error.stack); // ADD THIS
+        res.status(500).json(new ApiResponse(500, null, error.message));
     }
-
-    const exam = await ExamService.startCustomTest(user_id, selections, time_per_question || 30);
-    res.status(201).json(new ApiResponse(201, exam, "تم بدء الاختبار المخصص"));
-});
+};
 
 // Submit exam
-export const submitExam = asyncHandler(async (req, res) => {
-    const user_id = new mongoose.Types.ObjectId(req.user.userId);
-    const { exam_id } = req.params;
-    const { answers, time_spent } = req.body;
+export const submitExam = async (req, res) => {
+    try {
+        const user_id = new mongoose.Types.ObjectId(req.user.userId);
+        const { exam_id } = req.params;
+        const { answers, time_spent } = req.body;  // Get from req.body
 
-    // answers = [{ question_id: "...", user_answer: "a" }, ...]
-    const result = await ExamService.submitExam(user_id, exam_id, answers, time_spent || 0);
-    res.status(200).json(new ApiResponse(200, result, "تم إنهاء الاختبار"));
-});
-
+        // Pass in correct order: exam_id, user_id, then data object
+        const result = await ExamService.submitExam(exam_id, user_id, {
+            answers,
+            time_spent: time_spent || 0
+        });
+        
+        res.status(200).json(new ApiResponse(200, result, "تم تسليم الاختبار"));
+    } catch (error) {
+        console.error("Submit exam error:", error);
+        res.status(500).json(new ApiResponse(500, null, error.message));
+    }
+};
 // Get exam stats
-export const getExamStats = asyncHandler(async (req, res) => {
-    const user_id = new mongoose.Types.ObjectId(req.user.userId);
-
-    const stats = await ExamService.getExamStats(user_id);
-    res.status(200).json(new ApiResponse(200, stats, "تم جلب إحصائيات الاختبارات"));
-});
+export const getExamStats = async (req, res) => {
+    try {
+        const user_id = new mongoose.Types.ObjectId(req.user.userId);
+        const stats = await ExamService.getExamStats(user_id);
+        res.status(200).json(new ApiResponse(200, stats, "تم جلب إحصائيات الاختبارات"));
+    } catch (error) {
+        res.status(500).json(new ApiResponse(500, null, error.message));
+    }
+};
 
 // Get exam history
-export const getExamHistory = asyncHandler(async (req, res) => {
-    const user_id = new mongoose.Types.ObjectId(req.user.userId);
-
-    const history = await ExamService.getExamHistory(user_id);
-    res.status(200).json(new ApiResponse(200, history, "تم جلب سجل الاختبارات"));
-});
+export const getExamHistory = async (req, res) => {
+    try {
+        const user_id = new mongoose.Types.ObjectId(req.user.userId);
+        const history = await ExamService.getExamHistory(user_id);
+        res.status(200).json(new ApiResponse(200, history, "تم جلب سجل الاختبارات"));
+    } catch (error) {
+        res.status(500).json(new ApiResponse(500, null, error.message));
+    }
+};
 
 // Get exam details
-export const getExamDetails = asyncHandler(async (req, res) => {
-    const user_id = new mongoose.Types.ObjectId(req.user.userId);
-    const { exam_id } = req.params;
+export const getExamDetails = async (req, res) => {
+    try {
+        const user_id = new mongoose.Types.ObjectId(req.user.userId);
+        const { exam_id } = req.params;
 
-    const exam = await ExamService.getExamDetails(user_id, exam_id);
-    res.status(200).json(new ApiResponse(200, exam, "تم جلب تفاصيل الاختبار"));
-});
+        const exam = await ExamService.getExamDetails(user_id, exam_id);
+        res.status(200).json(new ApiResponse(200, exam, "تم جلب تفاصيل الاختبار"));
+    } catch (error) {
+        res.status(500).json(new ApiResponse(500, null, error.message));
+    }
+};

@@ -16,7 +16,8 @@ import {
     // Training Overview
     getTrainingOverview,
     getTrainingByInternalType,
-    getQuestionByIndex
+    getQuestionByIndex,
+    getAttemptsToday
 } from "../controllers/training.controller.js";
 import { protect } from "../middlewares/auth.middleware.js";
 
@@ -28,7 +29,7 @@ router.use(protect);
 // ============ TRAINING OVERVIEW (Main endpoints for training page) ============
 router.get("/overview", getTrainingOverview);
 router.get("/question/:internal_type_id", getQuestionByIndex);
-
+router.get("/attempts/today", protect, getAttemptsToday);
 // ============ PROGRESS ============
 router.get("/progress", getAllProgress);
 router.get("/progress/:internal_type_id", getProgress);

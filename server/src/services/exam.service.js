@@ -30,10 +30,10 @@ class ExamService {
             user_id,
             exam_type: "daily",
             questions: allQuestions.map(q => ({
-                question_id: q._id,
-                user_answer: null,
-                is_correct: false
-            })),
+    question_id: q.q_no,  // <-- Use q_no
+    user_answer: null,
+    is_correct: false
+})),
             total_questions: allQuestions.length,
             time_per_question,
             total_time: allQuestions.length * time_per_question
@@ -52,115 +52,169 @@ class ExamService {
 
     // ============ CUSTOM TEST ============
     
-    // Start custom test
-    async startCustomTest(user_id, selections, time_per_question = 30) {
-        // selections = [{ internal_type_id: 6, count: 5 }, { internal_type_id: 7, count: 3 }]
-        
-        let allQuestions = [];
+async startCustomTest(user_id, selections, time_per_question = 30) {
+    let allQuestionIds = [];
 
-        for (const selection of selections) {
-            if (selection.count > 0) {
-                const questions = await Question.aggregate([
-                    { $match: { internal_type_id: selection.internal_type_id, status: "مقبول" } },
-                    { $sample: { size: selection.count } }
-                ]);
-                allQuestions = [...allQuestions, ...questions];
-            }
+    for (const selection of selections) {
+        if (selection.count > 0) {
+            console.log("🔍 Searching for internal_type_id:", selection.internal_type_id);
+            
+            // Check what questions exist
+            const allQuestions = await Question.find({ internal_type_id: selection.internal_type_id });
+            console.log("📊 Total questions with this type:", allQuestions.length);
+            console.log("📊 Status values:", [...new Set(allQuestions.map(q => q.status))]);
+            
+            // Try without status filter first
+            const questionsNoFilter = await Question.aggregate([
+                { $match: { internal_type_id: selection.internal_type_id } },
+                { $sample: { size: selection.count } }
+            ]);
+            console.log("✅ Found WITHOUT status filter:", questionsNoFilter.length);
+            
+            // Now with status filter
+            const questions = await Question.aggregate([
+                { $match: { internal_type_id: selection.internal_type_id, status: "مقبول" } },
+                { $sample: { size: selection.count } }
+            ]);
+            console.log("✅ Found WITH status filter:", questions.length);
+            
+            allQuestionIds = [...allQuestionIds, ...questionsNoFilter.map(q => q._id)]; // Use no filter for now
         }
-
-        if (allQuestions.length === 0) {
-            throw new ApiError(400, "يرجى اختيار عدد الأسئلة");
-        }
-
-        // Create exam
-        const exam = await Exam.create({
-            user_id,
-            exam_type: "custom",
-            questions: allQuestions.map(q => ({
-                question_id: q._id,
-                user_answer: null,
-                is_correct: false
-            })),
-            total_questions: allQuestions.length,
-            time_per_question,
-            total_time: allQuestions.length * time_per_question
-        });
-
-        return {
-            exam_id: exam._id,
-            exam_type: "custom",
-            total_questions: allQuestions.length,
-            time_per_question,
-            total_time: exam.total_time,
-            questions: allQuestions
-        };
     }
+
+    console.log("🆔 Total question IDs collected:", allQuestionIds.length);
+
+    if (allQuestionIds.length === 0) {
+        throw new ApiError(400, "يرجى اختيار عدد الأسئلة");
+    }
+
+    // Now fetch full questions with populate
+    const populatedQuestions = await Question.find({ _id: { $in: allQuestionIds } })
+        .populate('passage_id');
+
+    // Create exam
+    const exam = await Exam.create({
+        user_id,
+        exam_type: "custom",
+        questions: populatedQuestions.map(q => ({
+            question_id: q.q_no,
+            user_answer: null,
+            is_correct: false
+        })),
+        total_questions: populatedQuestions.length,
+        time_per_question,
+        total_time: populatedQuestions.length * time_per_question
+    });
+
+    return {
+        exam_id: exam._id,
+        exam_type: "custom",
+        total_questions: populatedQuestions.length,
+        time_per_question,
+        total_time: exam.total_time,
+        questions: populatedQuestions.map(q => {
+            const questionObj = q.toObject();
+            return {
+                ...questionObj,
+                passage: q.passage_id ? {
+                    _id: q.passage_id._id,
+                    title: q.passage_id.title,
+                    passage_text: q.passage_id.passage_text
+                } : null
+            };
+        })
+    };
+}
 
     // ============ SUBMIT EXAM ============
     
-    async submitExam(user_id, exam_id, answers, time_spent) {
-        // answers = [{ question_id: "...", user_answer: "a" }, ...]
+    async submitExam(exam_id, user_id, data) {
+    const { answers, time_spent } = data;
+    
+    console.log("📝 Received answers:", answers);
+    
+    const exam = await Exam.findOne({ _id: exam_id, user_id });
+    if (!exam) {
+        throw new ApiError(404, "الاختبار غير موجود");
+    }
+
+    console.log("📋 Exam questions:", exam.questions.map(q => ({ question_id: q.question_id })));
+
+    // Get correct answers using q_no
+    const questionNos = exam.questions.map(q => q.question_id);
+    console.log("🔢 Question numbers:", questionNos);
+    
+    const questions = await Question.find({ q_no: { $in: questionNos } });
+    console.log("✅ Found questions:", questions.map(q => ({ q_no: q.q_no, _id: q._id, answer: q.correct_answer })));
+    
+    // Map by both q_no and _id
+    const correctAnswersMap = {};
+    const questionIdToQno = {};
+    
+    questions.forEach(q => {
+        correctAnswersMap[q.q_no] = q.correct_answer;
+        questionIdToQno[q._id.toString()] = q.q_no;
+    });
+
+    console.log("🗺️ Correct answers map:", correctAnswersMap);
+    console.log("🗺️ ID to qno map:", questionIdToQno);
+
+    // Calculate results
+    let correct_count = 0;
+    let wrong_count = 0;
+
+    const updatedQuestions = exam.questions.map(examQuestion => {
+        console.log("\n🔍 Processing question:", examQuestion.question_id);
         
-        const exam = await Exam.findOne({ _id: exam_id, user_id });
-        if (!exam) {
-            throw new ApiError(404, "الاختبار غير موجود");
-        }
-
-        if (exam.status === "completed") {
-            throw new ApiError(400, "الاختبار مكتمل بالفعل");
-        }
-
-        // Get correct answers
-        const questionIds = exam.questions.map(q => q.question_id);
-        const questions = await Question.find({ _id: { $in: questionIds } });
+        const userAnswerObj = answers.find(a => {
+            const qno = questionIdToQno[a.question_id];
+            console.log(`  Checking: answer.question_id=${a.question_id}, mapped qno=${qno}, exam qno=${examQuestion.question_id}`);
+            return qno === examQuestion.question_id;
+        });
         
-        const correctAnswersMap = {};
-        questions.forEach(q => {
-            correctAnswersMap[q._id.toString()] = q.correct_answer;
-        });
+        console.log("  User answer obj:", userAnswerObj);
+        
+        const correctAnswer = correctAnswersMap[examQuestion.question_id];
+        const userAnswer = userAnswerObj?.user_answer || null;
+        const is_correct = userAnswer === correctAnswer;
 
-        // Calculate results
-        let correct_count = 0;
-        let wrong_count = 0;
+        console.log(`  Correct: ${correctAnswer}, User: ${userAnswer}, Match: ${is_correct}`);
 
-        const updatedQuestions = exam.questions.map(q => {
-            const userAnswer = answers.find(a => a.question_id === q.question_id.toString());
-            const correctAnswer = correctAnswersMap[q.question_id.toString()];
-            const is_correct = userAnswer?.user_answer === correctAnswer;
-
-            if (userAnswer?.user_answer) {
-                if (is_correct) correct_count++;
-                else wrong_count++;
-            }
-
-            return {
-                question_id: q.question_id,
-                user_answer: userAnswer?.user_answer || null,
-                is_correct
-            };
-        });
-
-        const score_percentage = Math.round((correct_count / exam.total_questions) * 100);
-
-        // Update exam
-        exam.questions = updatedQuestions;
-        exam.correct_count = correct_count;
-        exam.wrong_count = wrong_count;
-        exam.score_percentage = score_percentage;
-        exam.time_spent = time_spent;
-        exam.status = "completed";
-        exam.completed_at = new Date();
-        await exam.save();
+        if (userAnswer) {
+            if (is_correct) correct_count++;
+            else wrong_count++;
+        }
 
         return {
-            exam_id: exam._id,
-            total_questions: exam.total_questions,
-            correct_count,
-            wrong_count,
-            score_percentage,
-            time_spent
+            question_id: examQuestion.question_id,
+            user_answer: userAnswer,
+            is_correct
         };
-    }
+    });
+
+    console.log("\n📊 Final: correct=" + correct_count + ", wrong=" + wrong_count);
+
+    const score_percentage = Math.round((correct_count / exam.total_questions) * 100);
+
+    // Update exam
+    exam.questions = updatedQuestions;
+    exam.correct_count = correct_count;
+    exam.wrong_count = wrong_count;
+    exam.score_percentage = score_percentage;
+    exam.time_spent = time_spent;
+    exam.status = "completed";
+    exam.completed_at = new Date();
+    await exam.save();
+
+    return {
+        exam_id: exam._id,
+        total_questions: exam.total_questions,
+        correct_count,
+        wrong_count,
+        score_percentage,
+        time_spent
+    };
+}
 
     // ============ EXAM STATS ============
     

@@ -1,61 +1,61 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaTimesCircle, FaCheckCircle } from 'react-icons/fa';
+
+const API_URL = "http://localhost:5005/api";
+const getToken = () => localStorage.getItem("token");
 
 export default function ReviewWrongAnswers() {
   const navigate = useNavigate();
 
-  // Mock wrong answers - replace with API data
-  const [questions] = useState([
-    {
-      id: 1,
-      question_type: "جبر",
-      question_text: "ما هو ناتج المعادلة: 2x + 5 = 15؟",
-      question_image: null,
-      options: [
-        { id: "أ", text: "x = 5" },
-        { id: "ب", text: "x = 10" },
-        { id: "ج", text: "x = 7.5" },
-        { id: "د", text: "x = 2.5" }
-      ],
-      correct_answer: "أ",
-      user_answer: "ب",
-      explanation: "نطرح 5 من الطرفين: 2x = 10، ثم نقسم على 2: x = 5"
-    },
-    {
-      id: 2,
-      question_type: "هندسة",
-      question_text: "ما هي مساحة مثلث قاعدته 10 سم وارتفاعه 8 سم؟",
-      question_image: null,
-      options: [
-        { id: "أ", text: "80 سم²" },
-        { id: "ب", text: "40 سم²" },
-        { id: "ج", text: "20 سم²" },
-        { id: "د", text: "160 سم²" }
-      ],
-      correct_answer: "ب",
-      user_answer: "أ",
-      explanation: "مساحة المثلث = (القاعدة × الارتفاع) ÷ 2 = (10 × 8) ÷ 2 = 40 سم²"
-    },
-    {
-      id: 3,
-      question_type: "استيعاب المقروء",
-      question_text: "ما هي الفكرة الرئيسية للنص؟",
-      question_image: null,
-      options: [
-        { id: "أ", text: "أهمية القراءة" },
-        { id: "ب", text: "فوائد التعليم" },
-        { id: "ج", text: "التطور التكنولوجي" },
-        { id: "د", text: "الثقافة العربية" }
-      ],
-      correct_answer: "أ",
-      user_answer: "ج",
-      explanation: "النص يركز على أهمية القراءة في بناء المعرفة"
-    }
-  ]);
-
+  const [questions, setQuestions] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [showExplanation, setShowExplanation] = useState(false);
+
+  useEffect(() => {
+    loadWrongAnswers();
+  }, []);
+
+  const loadWrongAnswers = async () => {
+    try {
+      const res = await fetch(`${API_URL}/training/stats/wrong-answers`, {
+        headers: { Authorization: `Bearer ${getToken()}` }
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        // Transform API data to match component structure
+        const formattedQuestions = data.data.wrong_answers.map(item => ({
+          id: item._id,
+          question_type: item.internal_name,
+          question_text: item.question?.question_text || "",
+          question_image: item.question?.question_image || null,
+          options: [
+            { id: "a", text: item.question?.mc_a },
+            { id: "b", text: item.question?.mc_b },
+            { id: "c", text: item.question?.mc_c },
+            { id: "d", text: item.question?.mc_d }
+          ],
+          correct_answer: item.correct_answer,
+          user_answer: item.user_answer,
+          explanation: item.question?.explanation || "لا يوجد شرح متاح",
+          // Add comparable and visualization data
+          is_comparable: item.question?.is_comparable || false,
+          comparable_option1_text: item.question?.comparable_option1_text || null,
+          comparable_option2_text: item.question?.comparable_option2_text || null,
+          have_visualization: item.question?.have_visualization || false,
+          visualization_image_url: item.question?.visualization_image_url || null
+        }));
+
+        setQuestions(formattedQuestions);
+      }
+    } catch (error) {
+      console.error("Error loading wrong answers:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const currentQuestion = questions[currentQuestionIndex];
 
@@ -77,11 +77,21 @@ export default function ReviewWrongAnswers() {
     navigate('/stats');
   };
 
-  if (!currentQuestion) {
+  if (loading) {
+    return (
+      <div className="min-vh-100 d-flex align-items-center justify-content-center">
+        <div className="spinner-border text-danger" role="status"></div>
+      </div>
+    );
+  }
+
+  if (!currentQuestion || questions.length === 0) {
     return (
       <div className="min-vh-100 d-flex align-items-center justify-content-center" dir="rtl">
         <div className="text-center">
-          <h3>لا توجد أسئلة خاطئة للمراجعة!</h3>
+          <FaCheckCircle size={80} className="text-success mb-4" />
+          <h3>رائع! لا توجد إجابات خاطئة للمراجعة</h3>
+          <p className="text-muted">لقد أجبت على جميع الأسئلة بشكل صحيح</p>
           <button onClick={() => navigate('/stats')} className="btn btn-primary mt-3">
             العودة للإحصائيات
           </button>
@@ -146,22 +156,63 @@ export default function ReviewWrongAnswers() {
             </div>
 
             {/* Question Text */}
-            <div className="mb-4">
-              <p className="mb-3" style={{ fontSize: "18px", lineHeight: "1.6", fontWeight: '500' }}>
-                {currentQuestion.question_text}
-              </p>
-              
-              {currentQuestion.question_image && (
-                <div className="text-center mb-3">
-                  <img 
-                    src={currentQuestion.question_image} 
-                    alt="question" 
-                    className="img-fluid" 
-                    style={{ maxHeight: "300px", borderRadius: "12px" }} 
-                  />
+            {currentQuestion.question_text && (
+              <div className="mb-4 p-3" style={{ backgroundColor: "#F3F4F6", borderRadius: "12px" }}>
+                <p className="mb-0" style={{ fontSize: "18px", lineHeight: "1.6" }}>
+                  {currentQuestion.question_text}
+                </p>
+              </div>
+            )}
+
+            {/* Question Image (if not comparable) */}
+            {currentQuestion.question_image && !currentQuestion.is_comparable && (
+              <div className="text-center mb-4">
+                <img 
+                  src={currentQuestion.question_image} 
+                  alt="question" 
+                  className="img-fluid" 
+                  style={{ maxHeight: "300px", borderRadius: "12px" }} 
+                />
+              </div>
+            )}
+
+            {/* Visualization */}
+            {currentQuestion.have_visualization && currentQuestion.visualization_image_url && (
+              <div className="text-center mb-4 p-3" style={{ backgroundColor: "#E3F2FD", borderRadius: "12px" }}>
+                <h6 className="fw-bold mb-3" style={{ color: "#1976D2" }}>الشكل التوضيحي</h6>
+                <img 
+                  src={currentQuestion.visualization_image_url} 
+                  alt="visualization" 
+                  className="img-fluid" 
+                  style={{ maxHeight: "350px", borderRadius: "12px" }} 
+                />
+              </div>
+            )}
+
+            {/* Comparable Questions */}
+            {currentQuestion.is_comparable && (
+              <div className="mb-4">
+                <h5 className="text-center mb-3 fw-bold">قارن بين:</h5>
+                <div className="row g-3">
+                  <div className="col-md-6">
+                    <div className="p-4 text-center" style={{ backgroundColor: "#E3F2FD", borderRadius: "12px", border: "2px solid #2196F3" }}>
+                      <h6 className="fw-bold mb-2" style={{ color: "#1976D2" }}>القيمة الأولى</h6>
+                      <div style={{ fontSize: "20px", fontWeight: "bold" }}>
+                        {currentQuestion.comparable_option1_text}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="p-4 text-center" style={{ backgroundColor: "#F3E5F5", borderRadius: "12px", border: "2px solid #9C27B0" }}>
+                      <h6 className="fw-bold mb-2" style={{ color: "#7B1FA2" }}>القيمة الثانية</h6>
+                      <div style={{ fontSize: "20px", fontWeight: "bold" }}>
+                        {currentQuestion.comparable_option2_text}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
             {/* Options */}
             <div className="d-flex flex-column gap-3 mb-4">
@@ -204,7 +255,7 @@ export default function ReviewWrongAnswers() {
                           fontSize: "18px"
                         }}
                       >
-                        {option.id}
+                        {option.id.toUpperCase()}
                       </div>
                       <span style={{ fontSize: "16px", flex: 1 }}>{option.text}</span>
                       {isCorrectAnswer && (
@@ -236,8 +287,12 @@ export default function ReviewWrongAnswers() {
               </button>
               
               {showExplanation && currentQuestion.explanation && (
-                <div className="alert alert-info" style={{ borderRadius: '12px' }}>
-                  <h6 className="fw-bold mb-2">💡 الشرح:</h6>
+                <div className="alert alert-danger" style={{ borderRadius: '12px' }}>
+                  <h6 className="fw-bold mb-2 text-danger">
+                    <FaTimesCircle className="me-2" />
+                    الإجابة الصحيحة: {currentQuestion.correct_answer.toUpperCase()}
+                  </h6>
+                  <h6 className="fw-bold mb-2 mt-3">💡 الشرح:</h6>
                   <p className="mb-0">{currentQuestion.explanation}</p>
                 </div>
               )}

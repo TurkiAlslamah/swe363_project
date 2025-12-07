@@ -132,6 +132,16 @@ export const getQuestionByIndex = asyncHandler(async (req, res) => {
     );
     res.status(200).json(new ApiResponse(200, data, "تم جلب السؤال"));
 });
+export const getAttemptsToday = async (req, res) => {
+    try {
+        const user_id = new mongoose.Types.ObjectId(req.user.userId);
+        const count = await TrainingService.getUserAttemptsToday(user_id);
+        
+        res.status(200).json(new ApiResponse(200, { attempts_today: count }, "تم جلب عدد المحاولات اليوم"));
+    } catch (error) {
+        res.status(500).json(new ApiResponse(500, null, error.message));
+    }
+};
 
 // Get training overview (for training page)
 export const getTrainingOverview = asyncHandler(async (req, res) => {

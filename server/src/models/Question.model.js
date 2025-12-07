@@ -4,7 +4,8 @@ const questionSchema = new mongoose.Schema(
     {
         q_no: {
             type: Number,
-            required: false
+            required: true,
+            unique: true 
         },
         // Content
         is_question_text: {
