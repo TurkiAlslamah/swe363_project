@@ -16,12 +16,14 @@ export default function AddQuestion() {
       setSuccessMessage('');
 
       // Create question via API - backend will assign q_no automatically
-      await createQuestion(formData);
+      const response = await createQuestion(formData);
       
       setSuccessMessage('تم إضافة السؤال بنجاح! سيتم مراجعته من قبل المشرف.');
       
-      // Dispatch event to trigger refetch in MyQuestions
-      window.dispatchEvent(new Event('questionAdded'));
+      // Dispatch event to trigger refetch in MyQuestions and Dashboard
+      window.dispatchEvent(new CustomEvent('questionAdded', { 
+        detail: { question: response.data } 
+      }));
       
       setTimeout(() => {
         navigate('/teacher/questions');

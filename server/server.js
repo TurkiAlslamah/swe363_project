@@ -11,6 +11,8 @@ import adminRoutes from "./src/routes/admin.routes.js";
 import authRoutes from "./src/routes/auth.routes.js";
 import reportRoutes from "./src/routes/report.routes.js";
 import passageRoutes from "./src/routes/passage.routes.js";
+import studentRoutes from "./src/routes/student.routes.js";
+import evaluationRoutes from "./src/routes/evaluation.routes.js";
 
 dotenv.config();
 
@@ -35,12 +37,14 @@ app.use("/api/exams", examRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/passages", passageRoutes);
+app.use("/api/students", studentRoutes);
+app.use("/api/evaluations", evaluationRoutes);
 
 // Error handler 
 app.use(errorHandler);
 
 // Start server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5005;
 connectDB().then(() => {
     app.listen(PORT, () => {
         console.log(`🚀 Server running on port ${PORT}`);
