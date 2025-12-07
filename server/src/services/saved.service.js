@@ -1,4 +1,4 @@
-import SavedQuestion from "../models/Savedquestion.model.js";
+import SavedQuestion from "../models/SavedQuestion.model.js";
 import Question from "../models/Question.model.js";
 import ApiError from "../utils/ApiError.js";
 
