@@ -13,7 +13,11 @@ import reportRoutes from "./src/routes/report.routes.js";
 import passageRoutes from "./src/routes/passage.routes.js";
 import studentRoutes from "./src/routes/student.routes.js";
 import evaluationRoutes from "./src/routes/evaluation.routes.js";
+import path from "path";
+import { fileURLToPath } from "url";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 dotenv.config();
 
 const app = express();
@@ -39,6 +43,15 @@ app.use("/api/reports", reportRoutes);
 app.use("/api/passages", passageRoutes);
 app.use("/api/students", studentRoutes);
 app.use("/api/evaluations", evaluationRoutes);
+
+// Serve static files in production
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../client/dist')));
+  
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/dist', 'index.html'));
+  });
+}
 
 // Error handler 
 app.use(errorHandler);

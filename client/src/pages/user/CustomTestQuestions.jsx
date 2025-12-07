@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { FaClock } from 'react-icons/fa';
 
-const API_URL = "http://localhost:5005/api";
+const API_URL = "/api";
 const getToken = () => localStorage.getItem("token");
 
 export default function CustomTestQuestions() {

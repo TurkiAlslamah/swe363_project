@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import Explanations from "../../components/user/Explanations";
 import ReportQuestion from "../../components/user/ReportQuestion";
 
-const API_URL = "http://localhost:5005/api";
+const API_URL = "/api";
 const getToken = () => localStorage.getItem("token");
 
 export default function TrainingQuestions() {

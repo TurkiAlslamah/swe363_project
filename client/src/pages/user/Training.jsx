@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { FaBook, FaLanguage, FaFileAlt, FaBullseye, FaStar } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
-const API_URL = "http://localhost:5005/api";
+const API_URL = "/api";
 const getToken = () => localStorage.getItem("token");
 
 export default function Training() {

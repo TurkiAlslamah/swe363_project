@@ -2,7 +2,7 @@ import { useState, useEffect,useRef  } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaClock, FaCalendarDay } from 'react-icons/fa';
 
-const API_URL = "http://localhost:5005/api";
+const API_URL = "/api";
 const getToken = () => localStorage.getItem("token");
 
 export default function DailyTest() {

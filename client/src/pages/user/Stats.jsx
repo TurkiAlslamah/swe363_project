@@ -13,7 +13,7 @@ import {
 } from 'react-icons/fa';
 
 export default function Stats() {
-  const API_URL = "http://localhost:5005/api";
+  const API_URL = "/api";
   const getToken = () => localStorage.getItem("token");
 
   const [stats, setStats] = useState({

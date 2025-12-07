@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { FaStar, FaBullseye, FaEdit, FaBook } from "react-icons/fa";
 
-const API_URL = "http://localhost:5005/api";
+const API_URL = "/api";
 const getToken = () => localStorage.getItem("token");
 
 export default function UserDashboard() {
