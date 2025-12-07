@@ -188,25 +188,27 @@ const icons = {
                         </div>
                       </div>
 
-                      <Link 
-                        to={`/training/${section.internal_type_id}`}
-                        state={{ 
-                          startIndex: section.last_question_index || 0,
-                          internalTypeName: section.internal_name,
-                          totalQuestions: section.total_questions
-                        }}
-                        className="btn text-white fw-bold d-flex align-items-center gap-2"
-                        style={{
-                          backgroundColor: bgColor,
-                          borderRadius: "12px",
-                          border: "none",
-                          padding: "10px 20px",
-                          textDecoration: "none"
-                        }}
-                      >
-                        <span>◄</span>
-                        <span>متابعة</span>
-                      </Link>
+                     <Link 
+                      to={`/training/${section.internal_type_id}`}
+                      state={{ 
+                        startIndex: section.last_question_index || 0,
+                        internalTypeName: section.internal_name,
+                        totalQuestions: section.total_questions
+                      }}
+                      className="btn text-white fw-bold d-flex align-items-center gap-2"
+                      style={{
+                        backgroundColor: bgColor,
+                        borderRadius: "12px",
+                        border: "none",
+                        padding: "8px 16px",
+                        textDecoration: "none",
+                        fontSize: "14px",
+                        whiteSpace: "nowrap"
+                      }}
+                    >
+                      <span className="d-none d-md-inline">◄</span>
+                      <span>متابعة</span>
+                    </Link>
                     </div>
                   </div>
                 </div>

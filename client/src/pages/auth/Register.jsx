@@ -54,15 +54,20 @@ export default function Register() {
       throw new Error(data.message || 'فشل إنشاء الحساب');
     }
 
-    // Save token and user data
-    localStorage.setItem('token', data.data.token);
-    localStorage.setItem('user', JSON.stringify(data.data.user));
+      // Save to localStorage
+      const { token, user } = data.data;
+      const userType = user.type === "student" ? "user" : user.type;
 
-    // Auto login after registration
-    login(email, "user");
+      localStorage.setItem('token', token);
+      localStorage.setItem('userType', userType);
+      localStorage.setItem('fullName', user.fullName);
+      localStorage.setItem('email', user.email);
 
-    // Navigate to dashboard (always student dashboard since register creates students)
-    navigate("/dashboard");
+      // Update auth context
+      login({ token, type: userType, fullName: user.fullName, email: user.email });
+
+      // Navigate to dashboard
+      navigate("/dashboard");
 
   } catch (err) {
     setError(err.message);
