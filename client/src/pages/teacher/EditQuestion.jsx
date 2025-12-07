@@ -20,8 +20,13 @@ export default function EditQuestion() {
       setLoading(true);
       setError('');
       setSuccessMessage('');
+      // apiCall returns data.data from ApiResponse, so response is already the question object
       const response = await getQuestionById(id);
-      setQuestion(response.data);
+      console.log('Loaded question:', response); // Debug log
+      if (!response) {
+        throw new Error('السؤال غير موجود');
+      }
+      setQuestion(response);
     } catch (err) {
       setError(err.message || 'السؤال غير موجود');
       console.error('Error loading question:', err);
@@ -41,14 +46,21 @@ export default function EditQuestion() {
       setError('');
       setSuccessMessage('');
 
+      // Clean up passage_id: remove it if it's empty string
+      const cleanedFormData = { ...formData };
+      if (!cleanedFormData.passage_id || cleanedFormData.passage_id === "" || cleanedFormData.passage_id === null) {
+        delete cleanedFormData.passage_id;
+      }
+
       // Update question via API
-      const response = await updateQuestion(id, formData);
+      // apiCall returns data.data from ApiResponse, so response is already the question object
+      const response = await updateQuestion(id, cleanedFormData);
       
       setSuccessMessage('تم تحديث السؤال بنجاح! سيتم مراجعته من قبل المشرف.');
       
       // Dispatch event to trigger refetch in MyQuestions and Dashboard
       window.dispatchEvent(new CustomEvent('questionUpdated', { 
-        detail: { question: response.data } 
+        detail: { question: response } 
       }));
       
       setTimeout(() => {
