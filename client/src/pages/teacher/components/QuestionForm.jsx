@@ -16,10 +16,20 @@ const internalTypes = [
 ];
 
 export default function QuestionForm({ initialData = null, onSubmit, onCancel }) {
-  const [formData, setFormData] = useState(() => ({
+  const [formData, setFormData] = useState(() => {
+    // Handle passage_id: could be ObjectId string, populated object, or null
+    let passageIdValue = null;
+    if (initialData?.passage_id) {
+      if (typeof initialData.passage_id === 'object' && initialData.passage_id._id) {
+        passageIdValue = initialData.passage_id._id;
+      } else if (typeof initialData.passage_id === 'string' && initialData.passage_id.trim()) {
+        passageIdValue = initialData.passage_id;
+      }
+    }
+    return {
     type_id: initialData?.type_id || 1,
     internal_type_id: initialData?.internal_type_id || "",
-    passage_id: initialData?.passage_id?._id || initialData?.passage_id || "",
+    passage_id: passageIdValue || "",
     is_question_text: initialData?.is_question_text !== undefined ? initialData.is_question_text : true,
     question_text: initialData?.question_text || "",
     question_image: initialData?.question_image || "",
@@ -36,7 +46,8 @@ export default function QuestionForm({ initialData = null, onSubmit, onCancel })
     comparable_value2: initialData?.comparable_value2 || "",
     have_visualization: initialData?.have_visualization || false,
     visualization_image_url: initialData?.visualization_image_url || "",
-  }));
+    };
+  });
 
   const [selectedType, setSelectedType] = useState(formData.type_id || "");
   const [passages, setPassages] = useState([]);
@@ -55,37 +66,50 @@ export default function QuestionForm({ initialData = null, onSubmit, onCancel })
   useEffect(() => {
     if (hasLoadedRef.current) return;
     hasLoadedRef.current = true;
-    loadData().then(() => {
-      // After loading, process initialData if it exists
-      if (initialData && !initialDataProcessedRef.current) {
-        initialDataProcessedRef.current = true;
-        const typeId = initialData.type_id || formData.type_id;
-        setSelectedType(typeId);
-        setFormData(prev => ({
-          ...prev,
-          type_id: typeId,
-          internal_type_id: initialData.internal_type_id || prev.internal_type_id,
-          passage_id: initialData.passage_id?._id || initialData.passage_id || prev.passage_id,
-          is_question_text: initialData.is_question_text !== undefined ? initialData.is_question_text : prev.is_question_text,
-          question_text: initialData.question_text || prev.question_text,
-          question_image: initialData.question_image || prev.question_image,
-          mc_a: initialData.mc_a || prev.mc_a,
-          mc_b: initialData.mc_b || prev.mc_b,
-          mc_c: initialData.mc_c || prev.mc_c,
-          mc_d: initialData.mc_d || prev.mc_d,
-          correct_answer: initialData.correct_answer || prev.correct_answer,
-          explanation: initialData.explanation || prev.explanation,
-          is_comparable: initialData.is_comparable || prev.is_comparable,
-          comparable_option1_text: initialData.comparable_option1_text || prev.comparable_option1_text,
-          comparable_option2_text: initialData.comparable_option2_text || prev.comparable_option2_text,
-          comparable_value1: initialData.comparable_value1 || prev.comparable_value1,
-          comparable_value2: initialData.comparable_value2 || prev.comparable_value2,
-          have_visualization: initialData.have_visualization || prev.have_visualization,
-          visualization_image_url: initialData.visualization_image_url || prev.visualization_image_url,
-        }));
-      }
-    });
+    loadData();
   }, []);
+
+  // Update formData when initialData changes (for Edit mode)
+  useEffect(() => {
+    if (initialData && initialData._id) {
+      console.log('Processing initialData:', initialData); // Debug log
+      const typeId = initialData.type_id || 1;
+      setSelectedType(typeId);
+      
+      // Handle passage_id: could be ObjectId string, populated object, or null
+      let passageIdValue = null;
+      if (initialData.passage_id) {
+        if (typeof initialData.passage_id === 'object' && initialData.passage_id._id) {
+          passageIdValue = initialData.passage_id._id;
+        } else if (typeof initialData.passage_id === 'string' && initialData.passage_id.trim()) {
+          passageIdValue = initialData.passage_id;
+        }
+      }
+      
+      setFormData(prev => ({
+        ...prev,
+        type_id: typeId,
+        internal_type_id: initialData.internal_type_id !== undefined ? initialData.internal_type_id : prev.internal_type_id,
+        passage_id: passageIdValue || prev.passage_id || "",
+        is_question_text: initialData.is_question_text !== undefined ? initialData.is_question_text : prev.is_question_text,
+        question_text: initialData.question_text !== undefined ? initialData.question_text : prev.question_text || "",
+        question_image: initialData.question_image !== undefined ? initialData.question_image : prev.question_image || "",
+        mc_a: initialData.mc_a !== undefined ? initialData.mc_a : prev.mc_a || "",
+        mc_b: initialData.mc_b !== undefined ? initialData.mc_b : prev.mc_b || "",
+        mc_c: initialData.mc_c !== undefined ? initialData.mc_c : prev.mc_c || "",
+        mc_d: initialData.mc_d !== undefined ? initialData.mc_d : prev.mc_d || "",
+        correct_answer: initialData.correct_answer !== undefined ? initialData.correct_answer : prev.correct_answer || "a",
+        explanation: initialData.explanation !== undefined ? initialData.explanation : prev.explanation || "",
+        is_comparable: initialData.is_comparable !== undefined ? initialData.is_comparable : prev.is_comparable,
+        comparable_option1_text: initialData.comparable_option1_text !== undefined ? initialData.comparable_option1_text : prev.comparable_option1_text || "",
+        comparable_option2_text: initialData.comparable_option2_text !== undefined ? initialData.comparable_option2_text : prev.comparable_option2_text || "",
+        comparable_value1: initialData.comparable_value1 !== undefined ? initialData.comparable_value1 : prev.comparable_value1 || "",
+        comparable_value2: initialData.comparable_value2 !== undefined ? initialData.comparable_value2 : prev.comparable_value2 || "",
+        have_visualization: initialData.have_visualization !== undefined ? initialData.have_visualization : prev.have_visualization,
+        visualization_image_url: initialData.visualization_image_url !== undefined ? initialData.visualization_image_url : prev.visualization_image_url || "",
+      }));
+    }
+  }, [initialData]);
 
   // Update selectedType when formData.type_id changes
   useEffect(() => {
@@ -185,7 +209,20 @@ export default function QuestionForm({ initialData = null, onSubmit, onCancel })
     }
     
     // If creating a new passage, create it first
-    let finalPassageId = formData.passage_id || null;
+    let finalPassageId = null;
+    // Check if passage_id exists and is not empty
+    if (formData.passage_id) {
+      if (typeof formData.passage_id === 'string') {
+        const trimmed = formData.passage_id.trim();
+        if (trimmed) {
+          finalPassageId = trimmed;
+        }
+      } else {
+        // It's already a valid ObjectId (shouldn't happen, but handle it)
+        finalPassageId = formData.passage_id;
+      }
+    }
+    
     if (internalTypeIdNum === 1 && passageMode === 'create') {
       try {
         const passageData = {
@@ -193,7 +230,6 @@ export default function QuestionForm({ initialData = null, onSubmit, onCancel })
           passage_text: newPassage.passage_text.trim()
         };
         const passageResponse = await createPassage(passageData);
-        // apiCall returns data.data from ApiResponse
         // apiCall returns data.data from ApiResponse
         finalPassageId = passageResponse._id || null;
         // Refresh passages list to include the new one
@@ -216,14 +252,24 @@ export default function QuestionForm({ initialData = null, onSubmit, onCancel })
       have_visualization: formData.have_visualization || false,
     };
     
-    // Add passage_id only if it exists and is not empty
-    // For Reading Comprehension (internal_type_id = 1), passage_id is required
-    if (internalTypeIdNum === 1 && finalPassageId) {
-      submitData.passage_id = finalPassageId;
-    } else if (finalPassageId) {
-      // For other types, include passage_id if provided
-      submitData.passage_id = finalPassageId;
+    // Handle passage_id: only include if it's a valid non-empty value
+    // Remove passage_id from submitData first to avoid sending empty string
+    delete submitData.passage_id;
+    
+    // Add passage_id only if it exists and is a valid non-empty value
+    if (finalPassageId) {
+      if (typeof finalPassageId === 'string') {
+        const trimmed = finalPassageId.trim();
+        if (trimmed) {
+          submitData.passage_id = trimmed;
+        }
+        // If trimmed is empty, passage_id won't be added (already deleted above)
+      } else {
+        // It's already a valid ObjectId string (shouldn't happen, but handle it)
+        submitData.passage_id = finalPassageId;
+      }
     }
+    // If finalPassageId is null, empty, or undefined, passage_id won't be in submitData
     
     // Remove q_no - backend will generate it automatically
     delete submitData.q_no;
@@ -321,7 +367,7 @@ export default function QuestionForm({ initialData = null, onSubmit, onCancel })
                 checked={passageMode === 'select'}
                 onChange={() => {
                   setPassageMode('select');
-                  setFormData(prev => ({ ...prev, passage_id: '' }));
+                  setFormData(prev => ({ ...prev, passage_id: "" }));
                   setNewPassage({ title: '', passage_text: '' });
                 }}
               />
@@ -337,7 +383,7 @@ export default function QuestionForm({ initialData = null, onSubmit, onCancel })
                 checked={passageMode === 'create'}
                 onChange={() => {
                   setPassageMode('create');
-                  setFormData(prev => ({ ...prev, passage_id: '' }));
+                  setFormData(prev => ({ ...prev, passage_id: "" }));
                 }}
               />
               <label className="btn btn-outline-primary" htmlFor="passageModeCreate">
