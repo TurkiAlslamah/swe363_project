@@ -27,10 +27,6 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-// Health check
-app.get("/", (req, res) => {
-    res.json({ message: "Qdrat API is running 🚀" });
-});
 
 // Routes
 app.use("/api/auth", authRoutes);
@@ -53,6 +49,10 @@ if (process.env.NODE_ENV === 'production') {
     res.sendFile(path.join(__dirname, '../client/dist', 'index.html'));
   });
 }
+// Health check
+app.get("/", (req, res) => {
+    res.json({ message: "Qdrat API is running 🚀" });
+});
 
 // Error handler 
 app.use(errorHandler);

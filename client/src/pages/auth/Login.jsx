@@ -46,16 +46,26 @@ export default function Login() {
     }
 
     // Save token and user data
-    localStorage.setItem('token', data.data.token);
-    localStorage.setItem('user', JSON.stringify(data.data.user));
+  // Save to localStorage
+    const { token, user } = data.data;
+    const userType = user.type === "student" ? "user" : user.type;
 
-    // Login with user type from backend
-login(email, data.data.user.type === "student" ? "user" : data.data.user.type);
+    localStorage.setItem('token', token);
+    localStorage.setItem('userType', userType);
+    localStorage.setItem('fullName', user.fullName);
+    localStorage.setItem('email', user.email);
 
-// Navigate based on user type from backend
-if (data.data.user.type === "admin") navigate("/admin/dashboard");
-else if (data.data.user.type === "teacher") navigate("/teacher/dashboard");
-else navigate("/dashboard");  // for "student" type
+    // Update auth context
+    login({ token, type: userType, fullName: user.fullName, email: user.email });
+
+    // Navigate based on user type
+    if (userType === "admin") {
+      navigate("/admin/dashboard");
+    } else if (userType === "teacher") {
+      navigate("/teacher/dashboard");
+    } else {
+      navigate("/dashboard");
+    }
 
   } catch (err) {
     setError(err.message);

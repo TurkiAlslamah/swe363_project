@@ -35,12 +35,34 @@ import AddQuestion from "./pages/teacher/AddQuestion";
 import EditQuestion from "./pages/teacher/EditQuestion";
 import Feedback from "./pages/teacher/Feedback";
 
+import NotFound from "./pages/NotFound";
+import { useEffect } from "react";
+import { useAuth } from "./context/AuthContext";
+
 // Navigation components
 import Header from "./components/common/Header";
 
 import Footer from "./components/common/Footer";
 function AppContent() {
   const location = useLocation();
+  const { setUser } = useAuth();
+
+  // Persist login on page refresh
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const userType = localStorage.getItem('userType');
+    const fullName = localStorage.getItem('fullName');
+    const email = localStorage.getItem('email');
+
+    if (token && userType) {
+      setUser({
+        token,
+        type: userType,
+        fullName,
+        email
+      });
+    }
+  }, [setUser]);
 
   return (
     <>
@@ -168,6 +190,7 @@ function AppContent() {
             }
           />
           
+          
 
              {/* ========= Admin Routes ========= */}
           <Route
@@ -212,6 +235,9 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
+          <Route path="*" element={<NotFound />} />
+          
+          
 
         </Routes>
       </main>

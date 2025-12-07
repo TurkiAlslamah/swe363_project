@@ -10,11 +10,21 @@ import { MdFeedback } from "react-icons/md";
 import { MdReportProblem } from "react-icons/md";
 
 export default function Header() {
-  const { user, logout } = useAuth();
-  const isLoggedIn = !!user;
+  const { logout } = useAuth();
   const location = useLocation();
-  const isAdmin = isLoggedIn && user.role === "admin";
-  const isTeacher = isLoggedIn && user.role === "teacher";
+  
+  // Get auth data from localStorage
+  const token = localStorage.getItem('token');
+  const userType = localStorage.getItem('userType');
+  const fullName = localStorage.getItem('fullName');
+  const email = localStorage.getItem('email');
+  
+  // Determine user state
+  const isLoggedIn = !!token;
+  const isAdmin = isLoggedIn && userType === "admin";
+  const isTeacher = isLoggedIn && userType === "teacher";
+  const isUser = isLoggedIn && userType === "user";
+  
   const isActiveAdmin = (path) => location.pathname.startsWith(path);
   const isActiveTeacher = (path) => location.pathname.startsWith(path);
 
@@ -37,7 +47,6 @@ export default function Header() {
         </div>
 
         {/* وسط: روابط الأدمن */}
-      
         <div className="mx-auto d-flex align-items-center gap-3">
           
           {/* الصفحة الرئيسية */}
@@ -81,23 +90,21 @@ export default function Header() {
             <MdQuiz size={20} className="ms-1" />
             مراجعة الأسئلة
           </Link>
-           <Link
-              to="/admin/reports"
-              className="d-flex align-items-center px-3 py-2 rounded-pill text-decoration-none"
-              style={{
-                backgroundColor: isActiveAdmin("/admin/reports")
-                  ? "#4B0082"
-                  : "transparent",
-                color: isActiveAdmin("/admin/reports") ? "#ffffff" : "#6b7280",
-                fontWeight: 500,
-              }}
-            >
-              <MdReportProblem className="ms-1" />
-              <span>بلاغات الأسئلة</span>
-            </Link>
 
+          {/* بلاغات الأسئلة */}
+          <Link
+            to="/admin/reports"
+            className="d-flex align-items-center px-3 py-2 rounded-pill text-decoration-none"
+            style={{
+              backgroundColor: isActiveAdmin("/admin/reports") ? "#4B0082" : "transparent",
+              color: isActiveAdmin("/admin/reports") ? "#ffffff" : "#6b7280",
+              fontWeight: 500,
+            }}
+          >
+            <MdReportProblem className="ms-1" />
+            <span>بلاغات الأسئلة</span>
+          </Link>
         </div>
-
 
         <div className="d-flex align-items-center gap-2">
           <div className="dropdown">
@@ -114,10 +121,8 @@ export default function Header() {
             />
             <ul className="dropdown-menu dropdown-menu-start">
               <li className="px-3 py-2 border-bottom">
-                <div className="fw-bold">
-                  {user.name || "مدير النظام"}
-                </div>
-                <small className="text-muted">{user.email}</small>
+                <div className="fw-bold">{fullName || "مدير النظام"}</div>
+                <small className="text-muted">{email}</small>
               </li>
               <li>
                 <button className="dropdown-item" type="button">
@@ -180,8 +185,8 @@ export default function Header() {
             />
             <ul className="dropdown-menu dropdown-menu-start">
               <li className="px-3 py-2 border-bottom">
-                <div className="fw-bold">{user.name || "المعلم"}</div>
-                <small className="text-muted">{user.email}</small>
+                <div className="fw-bold">{fullName || "المعلم"}</div>
+                <small className="text-muted">{email}</small>
               </li>
               <li>
                 <button className="dropdown-item" type="button">
@@ -277,7 +282,6 @@ export default function Header() {
       style={{
         backgroundColor: "#fffefeff",
         borderBottom: "1px solid #dee2e6",
-        
       }}
     >
       {/* RIGHT SIDE - LOGO */}
@@ -285,9 +289,8 @@ export default function Header() {
         SWE363
       </Link>
 
-      {/* CENTER LEFT – AVATAR (ALWAYS VISIBLE) */}
+      {/* CENTER LEFT – AVATAR/LOGIN BUTTONS (ALWAYS VISIBLE) */}
       <div className="d-flex align-items-center gap-3 order-lg-3">
-
         {!isLoggedIn && (
           <>
             <Link className="btn btn-outline-dark" to="/login">
@@ -309,7 +312,7 @@ export default function Header() {
           </>
         )}
 
-        {isLoggedIn && user.role === "user" && (
+        {isUser && (
           <div className="dropdown">
             <img
               src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
@@ -324,8 +327,8 @@ export default function Header() {
             />
             <ul className="dropdown-menu dropdown-menu-start">
               <li className="px-3 py-2 border-bottom">
-                <div className="fw-bold">{user.name || "المستخدم"}</div>
-                <small className="text-muted">{user.email}</small>
+                <div className="fw-bold">{fullName || "المستخدم"}</div>
+                <small className="text-muted">{email}</small>
               </li>
 
               <li>
@@ -348,7 +351,7 @@ export default function Header() {
 
       {/* MOBILE TOGGLER – ONLY CONTROLS NAV LINKS */}
       <button
-        className="navbar-toggler order-lg-2 "
+        className="navbar-toggler order-lg-2"
         type="button"
         data-bs-toggle="collapse"
         data-bs-target="#mainNavbar"
@@ -359,64 +362,62 @@ export default function Header() {
         <span className="navbar-toggler-icon"></span>
       </button>
 
-        {/* COLLAPSIBLE LINKS */}
-        <div className="collapse navbar-collapse justify-content-center order-lg-1" id="mainNavbar">
-          {isLoggedIn && user.role === "user" && (
-            <div className="navbar-nav text-center gap-3">
+      {/* COLLAPSIBLE LINKS */}
+      <div className="collapse navbar-collapse justify-content-center order-lg-1" id="mainNavbar">
+        {isUser && (
+          <div className="navbar-nav text-center gap-3">
+            <Link 
+              to="/dashboard" 
+              className="nav-link fw-bold d-flex align-items-center gap-2 px-3 py-2 rounded-pill"
+              style={{
+                backgroundColor: location.pathname === "/dashboard" ? "#4B0082" : "transparent",
+                color: location.pathname === "/dashboard" ? "#ffffff" : "#6b7280",
+              }}
+            >
+              <FaHome size={18} />
+              الصفحة الرئيسية
+            </Link>
 
-              <Link 
-                to="/dashboard" 
-                className="nav-link fw-bold d-flex align-items-center gap-2 px-3 py-2 rounded-pill"
-                style={{
-                  backgroundColor: location.pathname === "/dashboard" ? "#4B0082" : "transparent",
-                  color: location.pathname === "/dashboard" ? "#ffffff" : "#6b7280",
-                }}
-              >
-                <FaHome size={18} />
-                الصفحة الرئيسية
-              </Link>
+            <Link 
+              to="/training" 
+              className="nav-link fw-bold d-flex align-items-center gap-2 px-3 py-2 rounded-pill"
+              style={{
+                backgroundColor: location.pathname.startsWith("/training") ? "#4B0082" : "transparent",
+                color: location.pathname.startsWith("/training") ? "#ffffff" : "#6b7280",
+              }}
+            >
+              <MdMenuBook size={18} />
+              التدرييبات
+            </Link>
 
-              <Link 
-                to="/training" 
-                className="nav-link fw-bold d-flex align-items-center gap-2 px-3 py-2 rounded-pill"
-                style={{
-                  backgroundColor: location.pathname.startsWith("/training") ? "#4B0082" : "transparent",
-                  color: location.pathname.startsWith("/training") ? "#ffffff" : "#6b7280",
-                }}
-              >
-                <MdMenuBook size={18} />
-                التدرييبات
-              </Link>
+            <Link 
+              to="/exams" 
+              className="nav-link fw-bold d-flex align-items-center gap-2 px-3 py-2 rounded-pill"
+              style={{
+                backgroundColor: location.pathname.startsWith("/exams") ? "#4B0082" : "transparent",
+                color: location.pathname.startsWith("/exams") ? "#ffffff" : "#6b7280",
+              }}
+            >
+              <MdQuiz size={18} />
+              الاختبارات
+            </Link>
 
-              <Link 
-                to="/exams" 
-                className="nav-link fw-bold d-flex align-items-center gap-2 px-3 py-2 rounded-pill"
-                style={{
-                  backgroundColor: location.pathname.startsWith("/exams") ? "#4B0082" : "transparent",
-                  color: location.pathname.startsWith("/exams") ? "#ffffff" : "#6b7280",
-                }}
-              >
-                <MdQuiz size={18} />
-                الاختبارات
-              </Link>
-
-              <Link 
-                to="/stats" 
-                className="nav-link fw-bold d-flex align-items-center gap-2 px-3 py-2 rounded-pill"
-                style={{
-                  backgroundColor: location.pathname.startsWith("/stats") || 
-                                  location.pathname.startsWith("/review-") ? "#4B0082" : "transparent",
-                  color: location.pathname.startsWith("/stats") || 
-                        location.pathname.startsWith("/review-") ? "#ffffff" : "#6b7280",
-                }}
-              >
-                <BsGraphUp size={18} />
-                الأداء
-              </Link>
-
-            </div>
-          )}
-        </div>
+            <Link 
+              to="/stats" 
+              className="nav-link fw-bold d-flex align-items-center gap-2 px-3 py-2 rounded-pill"
+              style={{
+                backgroundColor: location.pathname.startsWith("/stats") || 
+                                location.pathname.startsWith("/review-") ? "#4B0082" : "transparent",
+                color: location.pathname.startsWith("/stats") || 
+                      location.pathname.startsWith("/review-") ? "#ffffff" : "#6b7280",
+              }}
+            >
+              <BsGraphUp size={18} />
+              الأداء
+            </Link>
+          </div>
+        )}
+      </div>
     </nav>
   );
 }
