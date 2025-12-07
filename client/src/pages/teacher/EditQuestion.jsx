@@ -42,12 +42,14 @@ export default function EditQuestion() {
       setSuccessMessage('');
 
       // Update question via API
-      await updateQuestion(id, formData);
+      const response = await updateQuestion(id, formData);
       
       setSuccessMessage('تم تحديث السؤال بنجاح! سيتم مراجعته من قبل المشرف.');
       
-      // Dispatch event to trigger refetch in MyQuestions
-      window.dispatchEvent(new Event('questionAdded'));
+      // Dispatch event to trigger refetch in MyQuestions and Dashboard
+      window.dispatchEvent(new CustomEvent('questionUpdated', { 
+        detail: { question: response.data } 
+      }));
       
       setTimeout(() => {
         navigate('/teacher/questions');

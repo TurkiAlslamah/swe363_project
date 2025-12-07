@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { getPassages } from '../../../services/api';
+import { getPassages, createPassage } from '../../../services/api';
 
 // Hardcoded internal types array
 const internalTypes = [
@@ -42,6 +42,11 @@ export default function QuestionForm({ initialData = null, onSubmit, onCancel })
   const [passages, setPassages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errors, setErrors] = useState({});
+  const [passageMode, setPassageMode] = useState('select'); // 'select' or 'create'
+  const [newPassage, setNewPassage] = useState({
+    title: '',
+    passage_text: ''
+  });
   const hasLoadedRef = useRef(false);
   const alertShownRef = useRef(false);
   const initialDataProcessedRef = useRef(false);
@@ -92,14 +97,18 @@ export default function QuestionForm({ initialData = null, onSubmit, onCancel })
   const loadData = async () => {
     try {
       setLoading(true);
+      // apiCall returns data.data from ApiResponse, so passagesData is already the array
       const passagesData = await getPassages();
-      setPassages(passagesData.data || []);
+      const passagesList = Array.isArray(passagesData) ? passagesData : (passagesData?.data || []);
+      console.log('Loaded passages:', passagesList.length); // Debug log
+      setPassages(passagesList);
     } catch (error) {
       console.error('Error loading data:', error);
       if (!alertShownRef.current) {
         alertShownRef.current = true;
         alert('حدث خطأ أثناء تحميل البيانات');
       }
+      setPassages([]);
     } finally {
       setLoading(false);
     }
@@ -121,7 +130,7 @@ export default function QuestionForm({ initialData = null, onSubmit, onCancel })
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     const newErrors = {};
@@ -148,8 +157,13 @@ export default function QuestionForm({ initialData = null, onSubmit, onCancel })
     
     // Validate passage for Reading Comprehension (internal_type_id = 1)
     const internalTypeIdNum = parseInt(formData.internal_type_id);
-    if (internalTypeIdNum === 1 && !formData.passage_id) {
-      newErrors.passage_id = 'الفقرة مطلوبة لأسئلة استيعاب المقروء';
+    if (internalTypeIdNum === 1) {
+      if (passageMode === 'select' && !formData.passage_id) {
+        newErrors.passage_id = 'الفقرة مطلوبة لأسئلة استيعاب المقروء';
+      }
+      if (passageMode === 'create' && !newPassage.passage_text.trim()) {
+        newErrors.new_passage_text = 'نص الفقرة مطلوب';
+      }
     }
     
     // Validate comparable fields if is_comparable is true
@@ -170,23 +184,52 @@ export default function QuestionForm({ initialData = null, onSubmit, onCancel })
       return;
     }
     
+    // If creating a new passage, create it first
+    let finalPassageId = formData.passage_id || null;
+    if (internalTypeIdNum === 1 && passageMode === 'create') {
+      try {
+        const passageData = {
+          title: newPassage.title.trim() || 'فقرة بدون عنوان',
+          passage_text: newPassage.passage_text.trim()
+        };
+        const passageResponse = await createPassage(passageData);
+        // apiCall returns data.data from ApiResponse
+        // apiCall returns data.data from ApiResponse
+        finalPassageId = passageResponse._id || null;
+        // Refresh passages list to include the new one
+        const updatedPassages = await getPassages();
+        const passagesList = Array.isArray(updatedPassages) ? updatedPassages : (updatedPassages?.data || []);
+        setPassages(passagesList);
+      } catch (err) {
+        setErrors({ ...errors, new_passage: 'حدث خطأ أثناء إنشاء الفقرة' });
+        return;
+      }
+    }
+    
     // Prepare data for submission
     const submitData = {
       ...formData,
       type_id: parseInt(formData.type_id),
       internal_type_id: parseInt(formData.internal_type_id),
-      passage_id: formData.passage_id || null,
       is_question_text: formData.is_question_text,
       is_comparable: formData.is_comparable || false,
       have_visualization: formData.have_visualization || false,
     };
+    
+    // Add passage_id only if it exists and is not empty
+    // For Reading Comprehension (internal_type_id = 1), passage_id is required
+    if (internalTypeIdNum === 1 && finalPassageId) {
+      submitData.passage_id = finalPassageId;
+    } else if (finalPassageId) {
+      // For other types, include passage_id if provided
+      submitData.passage_id = finalPassageId;
+    }
     
     // Remove q_no - backend will generate it automatically
     delete submitData.q_no;
     
     // Remove empty optional fields
     if (!submitData.explanation) delete submitData.explanation;
-    if (!submitData.passage_id) delete submitData.passage_id;
     if (!submitData.is_comparable) {
       delete submitData.comparable_option1_text;
       delete submitData.comparable_option2_text;
@@ -264,24 +307,102 @@ export default function QuestionForm({ initialData = null, onSubmit, onCancel })
 
       {/* Passage Field - Only for Reading Comprehension */}
       {showPassageField && (
-        <div className="mb-3">
-          <label className="form-label fw-bold">الفقرة (Passage) *</label>
-          <select
-            className={`form-select ${errors.passage_id ? 'is-invalid' : ''}`}
-            name="passage_id"
-            value={formData.passage_id}
-            onChange={handleInputChange}
-            required={showPassageField}
-          >
-            <option value="">اختر الفقرة</option>
-            {passages.map(passage => (
-              <option key={passage._id} value={passage._id}>
-                {passage.title}
-              </option>
-            ))}
-          </select>
-          {errors.passage_id && (
-            <div className="invalid-feedback d-block">{errors.passage_id}</div>
+        <div className="mb-3 border p-3 rounded">
+          <label className="form-label fw-bold mb-3">الفقرة (Passage) *</label>
+          
+          {/* Mode Selection: Select Existing or Create New */}
+          <div className="mb-3">
+            <div className="btn-group w-100" role="group">
+              <input
+                type="radio"
+                className="btn-check"
+                name="passageMode"
+                id="passageModeSelect"
+                checked={passageMode === 'select'}
+                onChange={() => {
+                  setPassageMode('select');
+                  setFormData(prev => ({ ...prev, passage_id: '' }));
+                  setNewPassage({ title: '', passage_text: '' });
+                }}
+              />
+              <label className="btn btn-outline-primary" htmlFor="passageModeSelect">
+                اختيار فقرة موجودة
+              </label>
+              
+              <input
+                type="radio"
+                className="btn-check"
+                name="passageMode"
+                id="passageModeCreate"
+                checked={passageMode === 'create'}
+                onChange={() => {
+                  setPassageMode('create');
+                  setFormData(prev => ({ ...prev, passage_id: '' }));
+                }}
+              />
+              <label className="btn btn-outline-primary" htmlFor="passageModeCreate">
+                إنشاء فقرة جديدة
+              </label>
+            </div>
+          </div>
+
+          {/* Select Existing Passage */}
+          {passageMode === 'select' && (
+            <div>
+              <label className="form-label">اختر الفقرة *</label>
+              <select
+                className={`form-select ${errors.passage_id ? 'is-invalid' : ''}`}
+                name="passage_id"
+                value={formData.passage_id}
+                onChange={handleInputChange}
+                required={passageMode === 'select'}
+              >
+                <option value="">اختر الفقرة</option>
+                {passages.map(passage => (
+                  <option key={passage._id} value={passage._id}>
+                    {passage.title}
+                  </option>
+                ))}
+              </select>
+              {errors.passage_id && (
+                <div className="invalid-feedback d-block">{errors.passage_id}</div>
+              )}
+            </div>
+          )}
+
+          {/* Create New Passage */}
+          {passageMode === 'create' && (
+            <div>
+              <div className="mb-3">
+                <label className="form-label">عنوان الفقرة (اختياري)</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={newPassage.title}
+                  onChange={(e) => setNewPassage(prev => ({ ...prev, title: e.target.value }))}
+                  placeholder="عنوان الفقرة"
+                  style={{ textAlign: "right" }}
+                />
+              </div>
+              <div className="mb-3">
+                <label className="form-label">نص الفقرة *</label>
+                <textarea
+                  className={`form-control ${errors.new_passage_text ? 'is-invalid' : ''}`}
+                  value={newPassage.passage_text}
+                  onChange={(e) => setNewPassage(prev => ({ ...prev, passage_text: e.target.value }))}
+                  rows="5"
+                  placeholder="أدخل نص الفقرة هنا..."
+                  required={passageMode === 'create'}
+                  style={{ textAlign: "right" }}
+                />
+                {errors.new_passage_text && (
+                  <div className="invalid-feedback d-block">{errors.new_passage_text}</div>
+                )}
+                {errors.new_passage && (
+                  <div className="invalid-feedback d-block">{errors.new_passage}</div>
+                )}
+              </div>
+            </div>
           )}
         </div>
       )}

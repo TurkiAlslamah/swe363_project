@@ -15,11 +15,16 @@ export default function MyQuestions() {
     try {
       setLoading(true);
       setError('');
-      const response = await getQuestions();
-      setQuestions(response.data || []);
+      // apiCall returns data.data from ApiResponse, so response is already the array
+      const questionsList = await getQuestions();
+      // Ensure we have an array
+      const questions = Array.isArray(questionsList) ? questionsList : [];
+      console.log('Fetched questions:', questions.length); // Debug log
+      setQuestions(questions);
     } catch (err) {
       setError(err.message || 'حدث خطأ أثناء جلب الأسئلة');
       console.error('Error fetching questions:', err);
+      setQuestions([]);
     } finally {
       setLoading(false);
     }
@@ -30,17 +35,21 @@ export default function MyQuestions() {
     fetchQuestions();
   }, [location.pathname]);
 
-  // Listen for question added event (from AddQuestion page)
+  // Listen for question added/updated/deleted events
   useEffect(() => {
-    const handleQuestionAdded = () => {
+    const handleQuestionChange = () => {
       fetchQuestions();
     };
 
-    // Listen for custom event
-    window.addEventListener('questionAdded', handleQuestionAdded);
+    // Listen for custom events
+    window.addEventListener('questionAdded', handleQuestionChange);
+    window.addEventListener('questionUpdated', handleQuestionChange);
+    window.addEventListener('questionDeleted', handleQuestionChange);
     
     return () => {
-      window.removeEventListener('questionAdded', handleQuestionAdded);
+      window.removeEventListener('questionAdded', handleQuestionChange);
+      window.removeEventListener('questionUpdated', handleQuestionChange);
+      window.removeEventListener('questionDeleted', handleQuestionChange);
     };
   }, []);
 
@@ -52,6 +61,10 @@ export default function MyQuestions() {
     if (window.confirm('هل أنت متأكد من حذف هذا السؤال؟')) {
       try {
         await deleteQuestionAPI(id);
+        // Dispatch event to trigger refetch in Dashboard
+        window.dispatchEvent(new CustomEvent('questionDeleted', { 
+          detail: { questionId: id } 
+        }));
         // Refresh the questions list after deletion
         await fetchQuestions();
         alert('تم حذف السؤال بنجاح');
